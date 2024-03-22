@@ -1,7 +1,7 @@
-latest_tag := $(shell git describe --tags || git rev-parse --short HEAD)
+latest_tag := $(shell git describe --tags &> /dev/null || git rev-parse --short HEAD)
 
 run: write_version
-	go run cmd/goyurback/main.go
+	GO_ENV=dev go run cmd/goyurback/main.go
 
 dev: write_version
 	air -c .air.toml

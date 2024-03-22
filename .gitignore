@@ -1,1 +1,8 @@
 .version
+
+# Env Files
+.env.*
+!.env.example
+
+# Build
+tmp
