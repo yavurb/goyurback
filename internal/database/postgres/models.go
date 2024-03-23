@@ -66,3 +66,17 @@ type Post struct {
 	CreatedAt   pgtype.Timestamp
 	UpdatedAt   pgtype.Timestamp
 }
+
+type Project struct {
+	ID           int32
+	PublicID     string
+	Name         string
+	Description  string
+	Tags         []string
+	ThumbnailUrl string
+	WebsiteUrl   string
+	Live         bool
+	CreatedAt    pgtype.Timestamp
+	UpdatedAt    pgtype.Timestamp
+	PostID       pgtype.Int4
+}

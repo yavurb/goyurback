@@ -10,9 +10,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"github.com/yavurb/goyurback/internal/posts/application"
-	"github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
-	"github.com/yavurb/goyurback/internal/posts/infrastructure/ui"
+
+	postApplication "github.com/yavurb/goyurback/internal/posts/application"
+	postRepository "github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
+	postUI "github.com/yavurb/goyurback/internal/posts/infrastructure/ui"
+
+	projectApplication "github.com/yavurb/goyurback/internal/projects/application"
+	projectRepository "github.com/yavurb/goyurback/internal/projects/infrastructure/repository"
+	projectUI "github.com/yavurb/goyurback/internal/projects/infrastructure/ui"
 )
 
 type appContext struct {
@@ -49,9 +54,13 @@ func (c *appContext) NewRouter() *echo.Echo {
 
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
-	postRespository := repository.NewRepo(c.Connpool)
-	postUcase := application.NewPostUsecase(postRespository)
-	ui.NewPostsRouter(e, postUcase)
+	postRespository := postRepository.NewRepo(c.Connpool)
+	postUcase := postApplication.NewPostUsecase(postRespository)
+	postUI.NewPostsRouter(e, postUcase)
+
+	projectRespository := projectRepository.NewRepo(c.Connpool)
+	projectUcase := projectApplication.NewProjectUsecase(projectRespository)
+	projectUI.NewProjectsRouter(e, projectUcase)
 
 	return e
 }
