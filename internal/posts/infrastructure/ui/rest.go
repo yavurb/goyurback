@@ -50,7 +50,7 @@ func (ctx *postRouterCtx) createPost(c echo.Context) error {
 		UpdatedAt:   post_.UpdatedAt,
 	}
 
-	return c.JSON(http.StatusOK, postOut)
+	return c.JSON(http.StatusCreated, postOut)
 }
 
 func (ctx *postRouterCtx) getPosts(c echo.Context) error {
@@ -63,7 +63,7 @@ func handleErr(err error) error {
 	switch err {
 	case domain.ErrPostNotFound:
 		return HTTPError{
-			Message: "User not found",
+			Message: "Post not found",
 		}.NotFound()
 	default:
 		return HTTPError{

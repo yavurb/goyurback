@@ -20,7 +20,7 @@ func (uc *postUsecase) Create(ctx context.Context, title, author, slug, descript
 	postCreated, err := uc.repository.CreatePost(ctx, postToCreate)
 	if err != nil {
 		log.Printf("Error creating post, got error: %v\n", err)
-		return nil, errors.New("Unable to crate post")
+		return nil, errors.New("unable to crate post")
 	}
 
 	return postCreated, nil
