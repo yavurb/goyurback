@@ -12,10 +12,11 @@ import (
 )
 
 const createPost = `-- name: CreatePost :one
-INSERT INTO posts (title, author, slug, description, content) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, author, content, description, slug, status, published_at, created_at, updated_at
+INSERT INTO posts (public_id, title, author, slug, description, content) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at
 `
 
 type CreatePostParams struct {
+	PublicID    string
 	Title       string
 	Author      string
 	Slug        string
@@ -25,6 +26,7 @@ type CreatePostParams struct {
 
 func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, error) {
 	row := q.db.QueryRow(ctx, createPost,
+		arg.PublicID,
 		arg.Title,
 		arg.Author,
 		arg.Slug,
@@ -34,6 +36,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	var i Post
 	err := row.Scan(
 		&i.ID,
+		&i.PublicID,
 		&i.Title,
 		&i.Author,
 		&i.Content,
@@ -48,7 +51,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 }
 
 const getPost = `-- name: GetPost :one
-SELECT id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE id = $1
+SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE id = $1
 `
 
 func (q *Queries) GetPost(ctx context.Context, id int32) (Post, error) {
@@ -56,6 +59,7 @@ func (q *Queries) GetPost(ctx context.Context, id int32) (Post, error) {
 	var i Post
 	err := row.Scan(
 		&i.ID,
+		&i.PublicID,
 		&i.Title,
 		&i.Author,
 		&i.Content,
@@ -70,7 +74,7 @@ func (q *Queries) GetPost(ctx context.Context, id int32) (Post, error) {
 }
 
 const getPostBySlug = `-- name: GetPostBySlug :one
-SELECT id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE slug = $1
+SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE slug = $1
 `
 
 func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) {
@@ -78,6 +82,7 @@ func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) 
 	var i Post
 	err := row.Scan(
 		&i.ID,
+		&i.PublicID,
 		&i.Title,
 		&i.Author,
 		&i.Content,
@@ -92,7 +97,7 @@ func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) 
 }
 
 const getPosts = `-- name: GetPosts :many
-SELECT id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts ORDER BY created_at DESC
+SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts ORDER BY created_at DESC
 `
 
 func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
@@ -106,6 +111,7 @@ func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
 		var i Post
 		if err := rows.Scan(
 			&i.ID,
+			&i.PublicID,
 			&i.Title,
 			&i.Author,
 			&i.Content,
@@ -127,7 +133,7 @@ func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
 }
 
 const updatePost = `-- name: UpdatePost :one
-UPDATE posts SET title = $1, author = $2, slug = $3, description = $4, content = $5, status = $6, published_at = $7, updated_at = now() WHERE id = $8 RETURNING id, title, author, content, description, slug, status, published_at, created_at, updated_at
+UPDATE posts SET title = $1, author = $2, slug = $3, description = $4, content = $5, status = $6, published_at = $7, updated_at = now() WHERE id = $8 RETURNING id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at
 `
 
 type UpdatePostParams struct {
@@ -155,6 +161,7 @@ func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) (Post, e
 	var i Post
 	err := row.Scan(
 		&i.ID,
+		&i.PublicID,
 		&i.Title,
 		&i.Author,
 		&i.Content,

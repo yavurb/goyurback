@@ -12,6 +12,7 @@ const (
 
 type Post struct {
 	ID          int32
+	PublicID    string
 	Title       string
 	Author      string
 	Slug        string

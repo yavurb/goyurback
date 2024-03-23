@@ -15,7 +15,7 @@ type PostIn struct {
 }
 
 type PostOut struct {
-	ID          int32         `json:"id"`
+	ID          string        `json:"id"`
 	Title       string        `json:"title"`
 	Author      string        `json:"author"`
 	Slug        string        `json:"slug"`

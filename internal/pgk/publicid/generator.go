@@ -9,10 +9,9 @@ import (
 const (
 	alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
 	lenght   = 12
-	prefix   = "gp"
 )
 
-func New() (string, error) {
+func New(prefix string) (string, error) {
 	id, err := nanoid.Generate(alphabet, lenght)
 
 	if err != nil {

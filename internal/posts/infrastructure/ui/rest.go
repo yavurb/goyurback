@@ -38,7 +38,7 @@ func (ctx *postRouterCtx) createPost(c echo.Context) error {
 	}
 
 	postOut := &PostOut{
-		ID:          post_.ID,
+		ID:          post_.PublicID,
 		Title:       post_.Title,
 		Author:      post_.Author,
 		Slug:        post_.Slug,

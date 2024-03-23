@@ -10,6 +10,8 @@ import (
 	"github.com/yavurb/goyurback/internal/projects/domain"
 )
 
+const prefix = "pr"
+
 type Repository struct {
 	db *postgres.Queries
 }
@@ -27,7 +29,7 @@ func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectC
 		postID = pgtype.Int4{Int32: project.PostID, Valid: true}
 	}
 
-	publicID, _ := publicid.New() // TODO: Handle error and add a retry mechanism to validate if the id already exists
+	publicID, _ := publicid.New(prefix) // TODO: Handle error and add a retry mechanism to validate if the id already exists
 
 	project_, err := r.db.CreateProject(ctx, postgres.CreateProjectParams{
 		PublicID:     publicID,

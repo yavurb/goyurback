@@ -1,5 +1,5 @@
 -- name: CreatePost :one
-INSERT INTO posts (title, author, slug, description, content) VALUES ($1, $2, $3, $4, $5) RETURNING *;
+INSERT INTO posts (public_id, title, author, slug, description, content) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: GetPost :one
 SELECT * FROM posts WHERE id = $1;

@@ -56,6 +56,7 @@ func (ns NullPostStatus) Value() (driver.Value, error) {
 
 type Post struct {
 	ID          int32
+	PublicID    string
 	Title       string
 	Author      string
 	Content     string

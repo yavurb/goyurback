@@ -2,6 +2,7 @@ CREATE TYPE post_status AS ENUM ('draft', 'published', 'archived');
 
 CREATE TABLE posts (
   id SERIAL PRIMARY KEY,
+  public_id VARCHAR(15) NOT NULL UNIQUE,
   title VARCHAR(128) NOT NULL,
   author VARCHAR(64) NOT NULL,
   content TEXT NOT NULL,
