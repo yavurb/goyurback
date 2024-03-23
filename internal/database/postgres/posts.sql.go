@@ -51,11 +51,11 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 }
 
 const getPost = `-- name: GetPost :one
-SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE id = $1
+SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE public_id = $1
 `
 
-func (q *Queries) GetPost(ctx context.Context, id int32) (Post, error) {
-	row := q.db.QueryRow(ctx, getPost, id)
+func (q *Queries) GetPost(ctx context.Context, publicID string) (Post, error) {
+	row := q.db.QueryRow(ctx, getPost, publicID)
 	var i Post
 	err := row.Scan(
 		&i.ID,

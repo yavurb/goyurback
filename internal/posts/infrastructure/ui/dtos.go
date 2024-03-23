@@ -26,3 +26,7 @@ type PostOut struct {
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"udpated_at"`
 }
+
+type GetPostParams struct {
+	ID string `param:"id" validate:"required"`
+}

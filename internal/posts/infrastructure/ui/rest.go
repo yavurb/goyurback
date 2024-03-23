@@ -20,7 +20,7 @@ func NewPostsRouter(echo *echo.Echo, postUsecase domain.PostUsecase) {
 	}
 
 	routerGroup.POST("", routerCtx.createPost)
-	routerGroup.GET("", routerCtx.getPosts)
+	routerGroup.GET("/:id", routerCtx.getPost)
 }
 
 func (ctx *postRouterCtx) createPost(c echo.Context) error {
@@ -34,7 +34,7 @@ func (ctx *postRouterCtx) createPost(c echo.Context) error {
 
 	post_, err := ctx.postUsecase.Create(c.Request().Context(), post.Title, post.Author, post.Slug, post.Description, post.Content)
 	if err != nil {
-		handleErr(err)
+		return handleErr(err)
 	}
 
 	postOut := &PostOut{
@@ -53,10 +53,35 @@ func (ctx *postRouterCtx) createPost(c echo.Context) error {
 	return c.JSON(http.StatusCreated, postOut)
 }
 
-func (ctx *postRouterCtx) getPosts(c echo.Context) error {
-	c.Request().Context()
+func (ctx *postRouterCtx) getPost(c echo.Context) error {
+	var params GetPostParams
 
-	return c.JSON(http.StatusOK, &struct{ Hello string }{Hello: "world"})
+	if err := c.Bind(&params); err != nil {
+		return HTTPError{
+			Message: "Invalid params",
+		}.BadRequest()
+	}
+
+	post, err := ctx.postUsecase.Get(c.Request().Context(), params.ID)
+
+	if err != nil {
+		return handleErr(err)
+	}
+
+	postOut := &PostOut{
+		ID:          post.PublicID,
+		Title:       post.Title,
+		Author:      post.Author,
+		Slug:        post.Slug,
+		Status:      post.Status,
+		Description: post.Description,
+		Content:     post.Content,
+		PublishedAt: post.PublishedAt,
+		CreatedAt:   post.CreatedAt,
+		UpdatedAt:   post.UpdatedAt,
+	}
+
+	return c.JSON(http.StatusOK, postOut)
 }
 
 func handleErr(err error) error {

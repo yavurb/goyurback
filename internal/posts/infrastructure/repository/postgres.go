@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
 	"github.com/yavurb/goyurback/internal/pgk/publicid"
@@ -35,6 +38,7 @@ func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*
 		Content:     post.Content,
 	})
 
+	// TODO: print log
 	if err != nil {
 		return nil, err
 	}
@@ -54,4 +58,34 @@ func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*
 	}
 
 	return newPost, nil
+}
+
+func (r *Repository) GetPost(ctx context.Context, id string) (*domain.Post, error) {
+	post_, err := r.db.GetPost(ctx, id)
+
+	if err != nil {
+		log.Printf("Error getting post. Got: %v", err)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrPostNotFound
+		}
+
+		log.Panicf("DB Error obtaining post: %v", err)
+	}
+
+	post := &domain.Post{
+		ID:          post_.ID,
+		PublicID:    post_.PublicID,
+		Title:       post_.Title,
+		Author:      post_.Author,
+		Slug:        post_.Slug,
+		Description: post_.Description,
+		Content:     post_.Content,
+		Status:      domain.Status(post_.Status),
+		PublishedAt: post_.PublishedAt.Time,
+		CreatedAt:   post_.CreatedAt.Time,
+		UpdatedAt:   post_.UpdatedAt.Time,
+	}
+
+	return post, nil
 }

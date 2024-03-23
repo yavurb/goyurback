@@ -2,7 +2,7 @@
 INSERT INTO posts (public_id, title, author, slug, description, content) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: GetPost :one
-SELECT * FROM posts WHERE id = $1;
+SELECT * FROM posts WHERE public_id = $1;
 
 -- name: GetPosts :many
 SELECT * FROM posts ORDER BY created_at DESC;
