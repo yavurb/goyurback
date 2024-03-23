@@ -1,31 +1,45 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/yavurb/goyurback/internal/posts/application"
+	"github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
 	"github.com/yavurb/goyurback/internal/posts/infrastructure/ui"
 )
 
 type appContext struct {
 	Settings *appSetings
+	Connpool *pgxpool.Pool
+	ctx      context.Context
 }
 type appSetings struct {
-	Port string
+	Port         string
+	DBConnString string
 }
 
 func NewAppContext() *appContext {
-	ctx := &appContext{
+	appCtx := &appContext{
 		Settings: &appSetings{},
+		ctx:      context.Background(),
 	}
 
-	ctx.initAppSettings()
+	appCtx.initAppSettings()
 
-	return ctx
+	connpool, err := pgxpool.New(appCtx.ctx, appCtx.Settings.DBConnString)
+	if err != nil {
+		log.Fatalf("Unable to create connection pool: %v\n", err)
+	}
+	appCtx.Connpool = connpool
+
+	return appCtx
 }
 
 func (c *appContext) NewRouter() *echo.Echo {
@@ -35,7 +49,9 @@ func (c *appContext) NewRouter() *echo.Echo {
 
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
-	ui.NewPostsRouter(e)
+	postRespository := repository.NewRepo(c.Connpool)
+	postUcase := application.NewPostUsecase(postRespository)
+	ui.NewPostsRouter(e, postUcase)
 
 	return e
 }
@@ -55,4 +71,5 @@ func (c *appContext) initAppSettings() {
 	}
 
 	c.Settings.Port = envs["PORT"]
+	c.Settings.DBConnString = envs["DB_URI"]
 }
