@@ -89,3 +89,36 @@ func (r *Repository) GetPost(ctx context.Context, id string) (*domain.Post, erro
 
 	return post, nil
 }
+
+// TODO: Add pagination
+func (r *Repository) GetPosts(ctx context.Context) ([]*domain.Post, error) {
+	posts, err := r.db.GetPosts(ctx)
+
+	if err != nil {
+		log.Printf("DB Error obtaining posts: %v", err)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []*domain.Post{}, nil
+		}
+	}
+
+	posts_ := []*domain.Post{}
+
+	for _, post := range posts {
+		posts_ = append(posts_, &domain.Post{
+			ID:          post.ID,
+			PublicID:    post.PublicID,
+			Title:       post.Title,
+			Author:      post.Author,
+			Slug:        post.Slug,
+			Description: post.Description,
+			Content:     post.Content,
+			Status:      domain.Status(post.Status),
+			PublishedAt: post.PublishedAt.Time,
+			CreatedAt:   post.CreatedAt.Time,
+			UpdatedAt:   post.UpdatedAt.Time,
+		})
+	}
+
+	return posts_, nil
+}

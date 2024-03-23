@@ -27,6 +27,10 @@ type PostOut struct {
 	UpdatedAt   time.Time     `json:"udpated_at"`
 }
 
+type PostsOut struct {
+	Data []*PostOut `json:"data"`
+}
+
 type GetPostParams struct {
 	ID string `param:"id" validate:"required"`
 }

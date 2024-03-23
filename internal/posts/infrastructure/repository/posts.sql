@@ -5,7 +5,7 @@ INSERT INTO posts (public_id, title, author, slug, description, content) VALUES 
 SELECT * FROM posts WHERE public_id = $1;
 
 -- name: GetPosts :many
-SELECT * FROM posts ORDER BY created_at DESC;
+SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC;
 
 -- name: GetPostBySlug :one
 SELECT * FROM posts WHERE slug = $1;

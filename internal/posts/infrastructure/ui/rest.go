@@ -21,6 +21,7 @@ func NewPostsRouter(echo *echo.Echo, postUsecase domain.PostUsecase) {
 
 	routerGroup.POST("", routerCtx.createPost)
 	routerGroup.GET("/:id", routerCtx.getPost)
+	routerGroup.GET("", routerCtx.getPosts)
 }
 
 func (ctx *postRouterCtx) createPost(c echo.Context) error {
@@ -82,6 +83,35 @@ func (ctx *postRouterCtx) getPost(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, postOut)
+}
+
+func (ctx *postRouterCtx) getPosts(c echo.Context) error {
+	posts, err := ctx.postUsecase.GetPosts(c.Request().Context())
+
+	if err != nil {
+		return handleErr(err)
+	}
+
+	postsOut := []*PostOut{}
+
+	for _, post := range posts {
+		postsOut = append(postsOut, &PostOut{
+			ID:          post.PublicID,
+			Title:       post.Title,
+			Author:      post.Author,
+			Slug:        post.Slug,
+			Status:      post.Status,
+			Description: post.Description,
+			Content:     post.Content,
+			PublishedAt: post.PublishedAt,
+			CreatedAt:   post.CreatedAt,
+			UpdatedAt:   post.UpdatedAt,
+		})
+	}
+
+	return c.JSON(http.StatusOK, &PostsOut{
+		Data: postsOut,
+	})
 }
 
 func handleErr(err error) error {
