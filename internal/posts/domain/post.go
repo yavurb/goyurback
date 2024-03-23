@@ -11,7 +11,7 @@ const (
 )
 
 type Post struct {
-	ID          int
+	ID          int32
 	Title       string
 	Author      string
 	Slug        string

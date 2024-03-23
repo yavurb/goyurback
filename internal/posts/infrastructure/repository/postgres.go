@@ -34,7 +34,7 @@ func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*
 	}
 
 	newPost := &domain.Post{
-		ID:          int(post_.ID),
+		ID:          post_.ID,
 		Title:       post_.Title,
 		Author:      post_.Author,
 		Slug:        post_.Slug,
