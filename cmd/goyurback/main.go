@@ -31,6 +31,6 @@ func main() {
 	`, Version)
 	fmt.Println()
 
-	host := fmt.Sprintf("localhost:%s", appCtx.Settings.Port)
+	host := fmt.Sprintf("0.0.0.0:%s", appCtx.Settings.Port)
 	app.Logger.Fatal(app.Start(host))
 }

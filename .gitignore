@@ -6,3 +6,6 @@
 
 # Chore
 tmp
+
+# MacOS Files
+.DS_Store
