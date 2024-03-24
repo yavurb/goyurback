@@ -53,3 +53,62 @@ func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (P
 	)
 	return i, err
 }
+
+const getProject = `-- name: GetProject :one
+SELECT id, public_id, name, description, tags, thumbnail_url, website_url, live, created_at, updated_at, post_id FROM projects WHERE public_id = $1
+`
+
+func (q *Queries) GetProject(ctx context.Context, publicID string) (Project, error) {
+	row := q.db.QueryRow(ctx, getProject, publicID)
+	var i Project
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.Name,
+		&i.Description,
+		&i.Tags,
+		&i.ThumbnailUrl,
+		&i.WebsiteUrl,
+		&i.Live,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.PostID,
+	)
+	return i, err
+}
+
+const getProjects = `-- name: GetProjects :many
+SELECT id, public_id, name, description, tags, thumbnail_url, website_url, live, created_at, updated_at, post_id FROM projects ORDER BY created_at DESC
+`
+
+func (q *Queries) GetProjects(ctx context.Context) ([]Project, error) {
+	rows, err := q.db.Query(ctx, getProjects)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Project
+	for rows.Next() {
+		var i Project
+		if err := rows.Scan(
+			&i.ID,
+			&i.PublicID,
+			&i.Name,
+			&i.Description,
+			&i.Tags,
+			&i.ThumbnailUrl,
+			&i.WebsiteUrl,
+			&i.Live,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.PostID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

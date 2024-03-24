@@ -6,6 +6,6 @@ type projectUsecase struct {
 	repository domain.ProjectRepository
 }
 
-func NewProjectUsecase(repository domain.ProjectRepository) *projectUsecase {
+func NewProjectUsecase(repository domain.ProjectRepository) domain.ProjectUsecase {
 	return &projectUsecase{repository}
 }

@@ -24,3 +24,11 @@ type ProjectOut struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 	// PostId       string     `json:"post_id"` // TODO: Should be the post's public id
 }
+
+type GetProjectParam struct {
+	ID string `param:"id" validate:"required"`
+}
+
+type ProjectsOut struct {
+	Data []*ProjectOut `json:"data"`
+}

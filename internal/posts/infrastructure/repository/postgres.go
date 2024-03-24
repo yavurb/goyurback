@@ -101,6 +101,8 @@ func (r *Repository) GetPosts(ctx context.Context) ([]*domain.Post, error) {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return []*domain.Post{}, nil
 		}
+
+		return nil, err
 	}
 
 	posts_ := []*domain.Post{}

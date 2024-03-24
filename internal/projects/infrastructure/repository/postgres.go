@@ -2,7 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
+	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
@@ -46,7 +49,53 @@ func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectC
 		return nil, err
 	}
 
-	newProject := &domain.Project{
+	newProject := toDomainStruct(&project_)
+
+	return newProject, nil
+}
+
+func (r *Repository) GetProject(ctx context.Context, id string) (*domain.Project, error) {
+	project_, err := r.db.GetProject(ctx, id)
+
+	if err != nil {
+		log.Printf("DB Error getting project: %v\n", err)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, domain.ErrProjectNotFound
+		}
+
+		return nil, err
+	}
+
+	project := toDomainStruct(&project_)
+
+	return project, nil
+}
+
+func (r *Repository) GetProjects(ctx context.Context) ([]*domain.Project, error) {
+	projects_, err := r.db.GetProjects(ctx)
+
+	if err != nil {
+		log.Printf("DB Error obtaining projects: %v", err)
+
+		if errors.Is(err, pgx.ErrNoRows) {
+			return []*domain.Project{}, nil
+		}
+
+		return nil, err
+	}
+
+	projects := []*domain.Project{}
+
+	for _, project := range projects_ {
+		projects = append(projects, toDomainStruct(&project))
+	}
+
+	return projects, nil
+}
+
+func toDomainStruct(project_ *postgres.Project) *domain.Project {
+	return &domain.Project{
 		ID:           project_.ID,
 		PublicID:     project_.PublicID,
 		Name:         project_.Name,
@@ -59,6 +108,4 @@ func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectC
 		CreatedAt:    project_.CreatedAt.Time,
 		UpdatedAt:    project_.UpdatedAt.Time,
 	}
-
-	return newProject, nil
 }
