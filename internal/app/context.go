@@ -76,7 +76,22 @@ func (c *appContext) initAppSettings() {
 
 	envs, err := godotenv.Read(envsFileName)
 	if err != nil {
-		log.Fatalf("Error loading `%s` file. Make sure the file is present and it is free of errors", envsFileName)
+		log.Printf("Error loading `%s` file. Make sure the file is present and it is free of errors", envsFileName)
+		log.Println("Trying to setup settings based on the OS envs...")
+
+		port, ok := os.LookupEnv("PORT")
+		if !ok {
+			log.Fatalln("Error loading Envs...")
+		}
+		c.Settings.Port = port
+
+		dbURI, ok := os.LookupEnv("DB_URI")
+		if !ok {
+			log.Fatalln("Error loading Envs...")
+		}
+		c.Settings.DBConnString = dbURI
+
+		return
 	}
 
 	c.Settings.Port = envs["PORT"]
