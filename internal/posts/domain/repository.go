@@ -7,5 +7,5 @@ type PostRepository interface {
 	GetPosts(ctx context.Context) ([]*Post, error)
 	// GetPostBySlug(ctx context.Context, slug string) (*Post, error)
 	CreatePost(ctx context.Context, post *PostCreate) (*Post, error)
-	// UpdatePost(ctx context.Context, post *Post) (*Post, error)
+	UpdatePost(ctx context.Context, post *Post) (*Post, error)
 }

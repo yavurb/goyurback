@@ -97,7 +97,7 @@ func (q *Queries) GetPostBySlug(ctx context.Context, slug string) (Post, error) 
 }
 
 const getPosts = `-- name: GetPosts :many
-SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE status = 'published' ORDER BY created_at DESC
+SELECT id, public_id, title, author, content, description, slug, status, published_at, created_at, updated_at FROM posts WHERE status = 'published' ORDER BY published_at DESC
 `
 
 func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {

@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
 	"github.com/yavurb/goyurback/internal/pgk/publicid"
@@ -121,4 +122,42 @@ func (r *Repository) GetPosts(ctx context.Context) ([]*domain.Post, error) {
 	}
 
 	return posts_, nil
+}
+
+func (r *Repository) UpdatePost(ctx context.Context, post *domain.Post) (*domain.Post, error) {
+	post_, err := r.db.UpdatePost(ctx, postgres.UpdatePostParams{
+		ID:          post.ID,
+		Title:       post.Title,
+		Author:      post.Author,
+		Slug:        post.Slug,
+		Description: post.Description,
+		Content:     post.Content,
+		Status:      postgres.PostStatus(post.Status),
+		PublishedAt: pgtype.Timestamp{
+			Valid: true,
+			Time:  post.PublishedAt,
+		},
+	})
+
+	if err != nil {
+		log.Printf("DB Error updating post: %v\n", err)
+
+		return nil, err
+	}
+
+	postUpdated := &domain.Post{
+		ID:          post_.ID,
+		PublicID:    post_.PublicID,
+		Title:       post_.Title,
+		Author:      post_.Author,
+		Slug:        post_.Slug,
+		Description: post_.Description,
+		Content:     post_.Content,
+		Status:      domain.Status(post_.Status),
+		PublishedAt: post_.PublishedAt.Time,
+		CreatedAt:   post_.CreatedAt.Time,
+		UpdatedAt:   post_.UpdatedAt.Time,
+	}
+
+	return postUpdated, nil
 }

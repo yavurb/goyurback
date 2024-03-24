@@ -27,6 +27,16 @@ type PostOut struct {
 	UpdatedAt   time.Time     `json:"udpated_at"`
 }
 
+type PostUpdate struct {
+	ID          string        `param:"id" validate:"required"`
+	Status      domain.Status `json:"status" validate:"omitempty,oneof=draft published archived"`
+	Title       string        `json:"title" validate:"omitempty,required,min=5,max=128"`
+	Author      string        `json:"author" validate:"omitempty,required,min=3,max=64"`
+	Slug        string        `json:"slug" validate:"omitempty,required"`
+	Description string        `json:"description" validate:"omitempty,required,min=5,max=255"`
+	Content     string        `json:"content" validate:"omitempty,required,min=10"`
+}
+
 type PostsOut struct {
 	Data []*PostOut `json:"data"`
 }

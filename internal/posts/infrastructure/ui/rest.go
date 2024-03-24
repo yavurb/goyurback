@@ -22,6 +22,7 @@ func NewPostsRouter(echo *echo.Echo, postUsecase domain.PostUsecase) {
 	routerGroup.POST("", routerCtx.createPost)
 	routerGroup.GET("/:id", routerCtx.getPost)
 	routerGroup.GET("", routerCtx.getPosts)
+	routerGroup.PATCH("/:id", routerCtx.updatePost)
 }
 
 func (ctx *postRouterCtx) createPost(c echo.Context) error {
@@ -112,6 +113,37 @@ func (ctx *postRouterCtx) getPosts(c echo.Context) error {
 	return c.JSON(http.StatusOK, &PostsOut{
 		Data: postsOut,
 	})
+}
+
+func (ctx *postRouterCtx) updatePost(c echo.Context) error {
+	var post PostUpdate
+
+	if err := c.Bind(&post); err != nil {
+		return HTTPError{
+			Message: "Invalid requests body",
+		}.ErrUnprocessableEntity()
+	}
+
+	post_, err := ctx.postUsecase.Update(c.Request().Context(), post.ID, post.Title, post.Author, post.Slug, post.Description, post.Content, post.Status)
+
+	if err != nil {
+		return handleErr(err)
+	}
+
+	postOut := &PostOut{
+		ID:          post_.PublicID,
+		Title:       post_.Title,
+		Author:      post_.Author,
+		Slug:        post_.Slug,
+		Status:      post_.Status,
+		Description: post_.Description,
+		Content:     post_.Content,
+		PublishedAt: post_.PublishedAt,
+		CreatedAt:   post_.CreatedAt,
+		UpdatedAt:   post_.UpdatedAt,
+	}
+
+	return c.JSON(http.StatusOK, postOut)
 }
 
 func handleErr(err error) error {
