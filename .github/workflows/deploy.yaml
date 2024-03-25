@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    name: Buil GoYurback and push to Artifact Registry
+    name: Build and push to Artifact Registry
     runs-on: ubuntu-latest
     environment: prod
     permissions:
@@ -55,7 +55,7 @@ jobs:
 
 
   deploy:
-    name: Deploy GoYurback to Cloud Run
+    name: Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: prod
     needs: build
