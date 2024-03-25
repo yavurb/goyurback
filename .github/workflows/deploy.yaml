@@ -50,14 +50,14 @@ jobs:
         env:
           DOCKER_BUILDKIT: 1
         run: |
-          gcloud builds submit --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
+          gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy container image to Cloud Run
         run: |
           gcloud beta run deploy $SERVICE_NAME \
             --memory 256MiB \
             --execution-environment gen1 \
-            --image us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
+            --image $REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
             --port $PORT \
             --project $PROJECT_ID \
             --region $REGION \
