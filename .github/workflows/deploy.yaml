@@ -48,9 +48,7 @@ jobs:
 
       - name: Build and push container image
         run: |
-          gcloud builds submit --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
-            --ignore-file !.env.prod \
-            --ignore-file !cmd/goyurback/.version
+          gcloud builds submit --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy container image to Cloud Run
         run: |
