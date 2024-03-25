@@ -54,7 +54,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ envs.REGION }}-docker.pkg.dev/${{ envs.PROJECT_ID }}/docker-images/${{ envs.SERVICE_NAME }}:$GITHUB_SHA
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:$GITHUB_SHA
 
       - name: Deploy container image to Cloud Run
         run: |
