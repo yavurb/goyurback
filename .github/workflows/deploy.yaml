@@ -38,7 +38,7 @@ jobs:
           DB_URI: ${{ secrets.DB_URI }}
         run: |
           make write_version
-          echo cmd/goyurback/.version
+          cat cmd/goyurback/.version
           echo GO_ENV=prod >> .env
           echo DB_URI=$DB_URI >> .env
 
