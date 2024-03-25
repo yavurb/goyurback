@@ -13,8 +13,8 @@ env:
   NUM_INSTANCES: 1
 
 jobs:
-  deploy:
-    name: Deploy GoYurback to Cloud Run
+  build:
+    name: Buil GoYurback and push to Artifact Registry
     runs-on: ubuntu-latest
     environment: prod
     permissions:
@@ -43,9 +43,6 @@ jobs:
           echo "DB_URI=$DB_URI" >> .env.prod
           echo "PORT=$PORT" >> .env.prod
 
-      # - name: Run migrations
-      #   run: pdm run db_upgrade
-
       - name: Configure docker for gcloud
         run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
@@ -56,10 +53,32 @@ jobs:
           push: true
           tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
+
+  deploy:
+    name: Deploy GoYurback to Cloud Run
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: build
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup gcloud credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup gcloud project
+        run: gcloud config set project $PROJECT_ID
+
       - name: Deploy container image to Cloud Run
         run: |
           gcloud beta run deploy $SERVICE_NAME \
-            --memory 256MiB \
+            --memory 256Mi \
             --execution-environment gen1 \
             --image $REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
             --port $PORT \
