@@ -45,7 +45,7 @@ jobs:
       #   run: pdm run db_upgrade
 
       - name: Build and push container image
-        run: gcloud builds submit --region=us-$REGION --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
+        run: gcloud builds submit --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
 
       - name: Deploy container image to Cloud Run
         run: |
