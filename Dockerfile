@@ -20,7 +20,7 @@ WORKDIR /app
 RUN adduser -D goyurback && chown -R goyurback:goyurback /app
 USER goyurback
 
-COPY --chown=goyurback:goyurback .env.dev .
+COPY --chown=goyurback:goyurback .env.* .
 COPY --from=build --chown=goyurback:goyurback /app/goyurback /app/
 
 EXPOSE 8910
