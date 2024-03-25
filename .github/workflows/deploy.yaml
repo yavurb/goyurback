@@ -1,0 +1,60 @@
+name: Deploy to production - GCP
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-east1
+  SERVICE_NAME: goyurback
+  PORT: 8910
+  NUM_INSTANCES: 1
+
+jobs:
+  deploy:
+    name: Deploy GoYurback to Cloud Run
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup gcloud credentials
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+
+      - name: Setup gcloud project
+        run: gcloud config set project $PROJECT_ID
+
+      - name: Setup Environment
+        env:
+          DB_URI: ${{ secrets.DB_URI }}
+        run: |
+          make write_version
+          echo GO_ENV=prod >> .env
+          echo DB_URI=$DB_URI >> .env
+
+      # - name: Run migrations
+      #   run: pdm run db_upgrade
+
+      - name: Build and push container image
+        run: gcloud builds submit --region=us-$REGION --tag us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA
+
+      - name: Deploy container image to Cloud Run
+        run: |
+          gcloud beta run deploy $SERVICE_NAME \
+            --memory 256MiB \
+            --execution-environment gen1 \
+            --image us-$REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
+            --port $PORT \
+            --project $PROJECT_ID \
+            --region $REGION \
+            --max-instances $NUM_INSTANCES \
+            --allow-unauthenticated \
+            --cpu-throttling \
+            --cpu-boost \
+            --set-env-vars "GO_ENV=prod"
