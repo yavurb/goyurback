@@ -47,14 +47,14 @@ jobs:
       #   run: pdm run db_upgrade
 
       - name: Configure docker for gcloud
-        run: gcloud auth configure-docker
+        run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
-          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:$GITHUB_SHA
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ github.sha }}
 
       - name: Deploy container image to Cloud Run
         run: |
