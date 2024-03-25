@@ -37,10 +37,10 @@ jobs:
         env:
           DB_URI: ${{ secrets.DB_URI }}
         run: |
-          make write_version
-          cat cmd/goyurback/.version
-          echo GO_ENV=prod >> .env
-          echo DB_URI=$DB_URI >> .env
+          echo 0.1.0 > cmd/goyurback/.version
+          echo GO_ENV=prod >> .env.prod
+          echo DB_URI=$DB_URI >> .env.prod
+          echo PORT=$PORT >> .env.prod
 
       # - name: Run migrations
       #   run: pdm run db_upgrade
