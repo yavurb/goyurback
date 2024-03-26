@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	postApplication "github.com/yavurb/goyurback/internal/posts/application"
 	postRepository "github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
@@ -51,6 +52,7 @@ func (c *appContext) NewRouter() *echo.Echo {
 	e := echo.New()
 
 	e.HideBanner = true
+	e.Use(middleware.Recover())
 
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
