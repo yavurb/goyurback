@@ -53,6 +53,8 @@ func (c *appContext) NewRouter() *echo.Echo {
 
 	e.HideBanner = true
 	e.Use(middleware.Recover())
+	// Limits request to 20req/s based on the client's IP
+	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20)))
 
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
