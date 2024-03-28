@@ -21,6 +21,7 @@ RUN adduser -D goyurback && chown -R goyurback:goyurback /app
 USER goyurback
 
 COPY --chown=goyurback:goyurback --chmod=440 .env.* /app/
+COPY --chown=goyurback:goyurback --chmod=440 certs certs/
 COPY --from=build --chown=goyurback:goyurback --chmod=770 /app/goyurback /app/
 
 EXPOSE 8910
