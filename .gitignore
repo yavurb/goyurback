@@ -9,3 +9,6 @@ tmp
 
 # MacOS Files
 .DS_Store
+
+# Certificates
+*.pem
