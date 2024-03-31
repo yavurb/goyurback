@@ -14,3 +14,7 @@ type CreateOut struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
+
+type GetChikitoParams struct {
+	ID string `param:"id" validate:"required"`
+}

@@ -32,3 +32,21 @@ func (q *Queries) CreateChikito(ctx context.Context, arg CreateChikitoParams) (C
 	)
 	return i, err
 }
+
+const getChikito = `-- name: GetChikito :one
+SELECT id, public_id, url, description, created_at, updated_at FROM chikitos WHERE public_id = $1
+`
+
+func (q *Queries) GetChikito(ctx context.Context, publicID string) (Chikito, error) {
+	row := q.db.QueryRow(ctx, getChikito, publicID)
+	var i Chikito
+	err := row.Scan(
+		&i.ID,
+		&i.PublicID,
+		&i.Url,
+		&i.Description,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}

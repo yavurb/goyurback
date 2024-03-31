@@ -19,6 +19,7 @@ func NewChikitosRouter(echo *echo.Echo, usecase domain.ChikitoUsecase) {
 	}
 
 	routerGroup.POST("", routerCtx.create)
+	routerGroup.GET("/:id", routerCtx.get)
 }
 
 func (ctx *chikitoRouterCtx) create(c echo.Context) error {
@@ -50,4 +51,27 @@ func (ctx *chikitoRouterCtx) create(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, chikitoOut)
+}
+
+func (ctx *chikitoRouterCtx) get(c echo.Context) error {
+	var chikitoParams GetChikitoParams
+
+	if err := c.Bind(&chikitoParams); err != nil {
+		log.Printf("Bad chikito params. %v\n", err)
+
+		return HTTPError{
+			Message: "Bad chikito params",
+		}.ErrUnprocessableEntity()
+	}
+
+	chikito, err := ctx.usecase.Get(c.Request().Context(), chikitoParams.ID)
+	if err != nil {
+		log.Printf("Could not get chikito. %v\n", err)
+
+		return HTTPError{
+			Message: "Unable to get chikito",
+		}.NotFound()
+	}
+
+	return c.Redirect(http.StatusPermanentRedirect, chikito.URL)
 }
