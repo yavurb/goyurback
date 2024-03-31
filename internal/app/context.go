@@ -19,6 +19,10 @@ import (
 	projectApplication "github.com/yavurb/goyurback/internal/projects/application"
 	projectRepository "github.com/yavurb/goyurback/internal/projects/infrastructure/repository"
 	projectUI "github.com/yavurb/goyurback/internal/projects/infrastructure/ui"
+
+	chikitoApplication "github.com/yavurb/goyurback/internal/chikitos/application"
+	chikitoRepository "github.com/yavurb/goyurback/internal/chikitos/infrastructure/repository"
+	chikitoUI "github.com/yavurb/goyurback/internal/chikitos/infrastructure/ui"
 )
 
 type appContext struct {
@@ -65,6 +69,10 @@ func (c *appContext) NewRouter() *echo.Echo {
 	projectRespository := projectRepository.NewRepo(c.Connpool)
 	projectUcase := projectApplication.NewProjectUsecase(projectRespository)
 	projectUI.NewProjectsRouter(e, projectUcase)
+
+	chikitoRespository := chikitoRepository.NewRepo(c.Connpool)
+	chikitoUcase := chikitoApplication.NewChikitoUsecase(chikitoRespository)
+	chikitoUI.NewChikitosRouter(e, chikitoUcase)
 
 	return e
 }
