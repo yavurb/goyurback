@@ -20,3 +20,12 @@ func NewPublicID(prefix string) (string, error) {
 
 	return strings.Join([]string{prefix, id}, "_"), nil
 }
+
+func NewAPIKey() (string, error) {
+	apiKey, err := rand.GenerateRandomString(32)
+	if err != nil {
+		return "", err
+	}
+
+	return apiKey, nil
+}
