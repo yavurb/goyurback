@@ -1,9 +1,10 @@
-package publicid
+package ids
 
 import (
 	"strings"
 
 	nanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/yavurb/goyurback/internal/pgk/rand"
 )
 
 const (
@@ -11,9 +12,8 @@ const (
 	lenght   = 12
 )
 
-func New(prefix string) (string, error) {
+func NewPublicID(prefix string) (string, error) {
 	id, err := nanoid.Generate(alphabet, lenght)
-
 	if err != nil {
 		return "", err
 	}
