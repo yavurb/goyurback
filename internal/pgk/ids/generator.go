@@ -27,5 +27,10 @@ func NewAPIKey() (string, error) {
 		return "", err
 	}
 
+	// Remove the special characters from the generated string
+	apiKey = strings.ReplaceAll(apiKey, "-", "")
+	apiKey = strings.ReplaceAll(apiKey, "_", "")
+	apiKey = strings.ReplaceAll(apiKey, "=", "")
+
 	return apiKey, nil
 }
