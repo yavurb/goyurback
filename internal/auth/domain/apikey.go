@@ -5,7 +5,7 @@ import "time"
 type APIKey struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	DeletedAt time.Time
+	RevokedAt time.Time
 
 	Name     string
 	Key      string

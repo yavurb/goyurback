@@ -19,6 +19,10 @@ import (
 	projectApplication "github.com/yavurb/goyurback/internal/projects/application"
 	projectRepository "github.com/yavurb/goyurback/internal/projects/infrastructure/repository"
 	projectUI "github.com/yavurb/goyurback/internal/projects/infrastructure/ui"
+
+	authApplication "github.com/yavurb/goyurback/internal/auth/application"
+	authRepository "github.com/yavurb/goyurback/internal/auth/infrastructure/repository"
+	authUI "github.com/yavurb/goyurback/internal/auth/infrastructure/ui"
 )
 
 type appContext struct {
@@ -48,6 +52,7 @@ func NewAppContext() *appContext {
 	return appCtx
 }
 
+// TODO: Add custom validator
 func (c *appContext) NewRouter() *echo.Echo {
 	e := echo.New()
 
@@ -65,6 +70,10 @@ func (c *appContext) NewRouter() *echo.Echo {
 	projectRespository := projectRepository.NewRepo(c.Connpool)
 	projectUcase := projectApplication.NewProjectUsecase(projectRespository)
 	projectUI.NewProjectsRouter(e, projectUcase)
+
+	authAPIKeyRespository := authRepository.NewAPIKeyRepo(c.Connpool)
+	authAPIKeyUcase := authApplication.NewAPIKeyUsecase(authAPIKeyRespository)
+	authUI.NewAuthRouter(e, authAPIKeyUcase)
 
 	return e
 }

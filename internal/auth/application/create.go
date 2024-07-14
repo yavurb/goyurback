@@ -10,7 +10,7 @@ import (
 
 const prefix = "sk"
 
-func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name, key string) (*domain.APIKey, error) {
+func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name string) (*domain.APIKey, error) {
 	keyString, err := ids.NewAPIKey()
 	if err != nil {
 		return nil, err
@@ -18,7 +18,7 @@ func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name, key string) (*d
 
 	keyString = strings.Join([]string{prefix, keyString}, "_")
 
-	// TODO: Hash the key before saving
+	// TODO: Hash the key before saving, and return the unhashed key
 
 	apiKey := &domain.APIKeyCreate{
 		Key:  keyString,

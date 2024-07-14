@@ -16,7 +16,7 @@ type Repository struct {
 	db *postgres.Queries
 }
 
-func NewRepo(connpool *pgxpool.Pool) domain.APIKeyRepository {
+func NewAPIKeyRepo(connpool *pgxpool.Pool) domain.APIKeyRepository {
 	db := postgres.New(connpool)
 
 	return &Repository{
@@ -43,8 +43,12 @@ func (r *Repository) CreateAPIKey(ctx context.Context, apiKey *domain.APIKeyCrea
 	newApiKey := &domain.APIKey{
 		ID:        apiKey_.ID,
 		PublicID:  apiKey_.PublicID,
+		Name:      apiKey_.Name,
+		Key:       apiKey_.Key,
+		Revoked:   apiKey_.Revoked,
 		CreatedAt: apiKey_.CreatedAt.Time,
 		UpdatedAt: apiKey_.UpdatedAt.Time,
+		RevokedAt: apiKey_.RevokedAt.Time,
 	}
 
 	return newApiKey, nil
