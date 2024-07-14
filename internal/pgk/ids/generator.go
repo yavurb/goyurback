@@ -22,7 +22,7 @@ func NewPublicID(prefix string) (string, error) {
 }
 
 func NewAPIKey() (string, error) {
-	apiKey, err := rand.GenerateRandomString(32)
+	apiKey, err := rand.GenerateRandomString(64)
 	if err != nil {
 		return "", err
 	}
