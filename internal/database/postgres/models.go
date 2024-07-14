@@ -54,6 +54,17 @@ func (ns NullPostStatus) Value() (driver.Value, error) {
 	return string(ns.PostStatus), nil
 }
 
+type Apikey struct {
+	ID        int32
+	PublicID  string
+	Name      string
+	Key       string
+	Revoked   bool
+	RevokedAt pgtype.Timestamp
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
 type Post struct {
 	ID          int32
 	PublicID    string

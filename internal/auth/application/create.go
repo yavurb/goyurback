@@ -2,22 +2,27 @@ package application
 
 import (
 	"context"
+	"strings"
 
 	"github.com/yavurb/goyurback/internal/auth/domain"
 	"github.com/yavurb/goyurback/internal/pgk/ids"
 )
 
-func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, keyName, key string) (*domain.APIKey, error) {
+const prefix = "sk"
+
+func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name, key string) (*domain.APIKey, error) {
 	keyString, err := ids.NewAPIKey()
 	if err != nil {
 		return nil, err
 	}
 
+	keyString = strings.Join([]string{prefix, keyString}, "_")
+
 	// TODO: Hash the key before saving
 
 	apiKey := &domain.APIKeyCreate{
-		Key:     keyString,
-		KeyName: keyName,
+		Key:  keyString,
+		Name: name,
 	}
 
 	createdKey, err := uc.repository.CreateAPIKey(ctx, apiKey)

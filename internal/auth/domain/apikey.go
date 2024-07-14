@@ -7,7 +7,7 @@ type APIKey struct {
 	UpdatedAt time.Time
 	DeletedAt time.Time
 
-	KeyName  string
+	Name     string
 	Key      string
 	PublicID string
 	ID       int32
@@ -15,6 +15,6 @@ type APIKey struct {
 }
 
 type APIKeyCreate struct {
-	KeyName string
-	Key     string
+	Name string
+	Key  string
 }

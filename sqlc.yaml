@@ -4,6 +4,7 @@ sql:
     queries:
       - "internal/posts/infrastructure/repository/posts.sql"
       - "internal/projects/infrastructure/repository/projects.sql"
+      - "internal/auth/infrastructure/repository/apikeys.sql"
     schema: "migrations/"
     gen:
       go:
