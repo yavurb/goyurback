@@ -17,7 +17,7 @@ func NewAuthRouter(e *echo.Echo, apiKeyUsecase domain.APIKeyUsecase) {
 		apiKeyUsecase,
 	}
 
-	routerGroup.POST("/keys", routerCtx.CreateAPIKey)
+	// routerGroup.POST("/keys", routerCtx.CreateAPIKey)
 	routerGroup.DELETE("/keys/:publicID", routerCtx.RevokeAPIKey)
 }
 
