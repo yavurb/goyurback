@@ -9,6 +9,7 @@ on:
         value: ${{ jobs.release.outputs.semver }}
         description: semver from our release branch name
 
+# TODO: Replace the marvinpinto action with: https://github.com/marvinpinto/action-automatic-releases/pull/2#issuecomment-1817530497
 jobs:
   release:
     name: "Extract semver from release branch"
