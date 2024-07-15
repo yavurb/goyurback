@@ -1,9 +1,9 @@
 name: Deploy to production - GCP
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - production
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -13,6 +13,11 @@ env:
   NUM_INSTANCES: 1
 
 jobs:
+  git-release:
+    uses: ./.github/workflows/git-release.yaml
+    secrets:
+      github-token: ${{ secrets.GITHUB_TOKEN }}
+
   build:
     name: Build and push to Artifact Registry
     runs-on: ubuntu-latest
@@ -20,6 +25,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    needs: git-release
+    outputs:
+      image_tag: ${{ steps.dtag.outputs.image_tag }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +45,7 @@ jobs:
         env:
           DB_URI: ${{ secrets.DB_URI }}
         run: |
-          echo "0.1.0" > ./cmd/goyurback/.version
+          echo "${{ needs.git-release.outputs.semver }}" > ./cmd/goyurback/.version
           cat cmd/goyurback/.version
           echo "GO_ENV=prod" >> .env.prod
           echo "DB_URI=$DB_URI" >> .env.prod
@@ -46,13 +54,17 @@ jobs:
       - name: Configure docker for gcloud
         run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
+      - name: Setup image tag
+        id: dtag
+        run: |
+          echo "image_tag=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ needs.git-release.outputs.semver }}.${{ github.sha }}" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ github.sha }}
-
+          tags: ${{ steps.dtag.outputs.image_tag }}
 
   deploy:
     name: Deploy to Cloud Run
@@ -80,7 +92,7 @@ jobs:
           gcloud beta run deploy $SERVICE_NAME \
             --memory 256Mi \
             --execution-environment gen1 \
-            --image $REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$GITHUB_SHA \
+            --image "${{ needs.build.outputs.image_tag }}" \
             --port $PORT \
             --project $PROJECT_ID \
             --region $REGION \
