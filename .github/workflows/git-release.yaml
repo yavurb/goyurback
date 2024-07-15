@@ -28,4 +28,4 @@ jobs:
           automatic_release_tag: "${{ steps.semver.outputs.value }}"
           prerelease: false
           draft: false
-          title: "Release ${{ steps.semver.outputs.value }}"
+          title: "${{ steps.semver.outputs.value }}"

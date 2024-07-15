@@ -54,23 +54,18 @@ jobs:
       - name: Configure docker for gcloud
         run: gcloud auth configure-docker $REGION-docker.pkg.dev
 
-      - name: Setup image tag
-        id: dtag
-        run: |
-          echo "image_tag=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ needs.git-release.outputs.semver }}.${{ github.sha }}" >> $GITHUB_OUTPUT
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.dtag.outputs.image_tag }}
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/docker-images/${{ env.SERVICE_NAME }}:${{ needs.git-release.outputs.semver }}.${{ github.sha }}
 
   deploy:
     name: Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: prod
-    needs: build
+    needs: [ git-release, build ]
     permissions:
       contents: read
       id-token: write
@@ -88,11 +83,13 @@ jobs:
         run: gcloud config set project $PROJECT_ID
 
       - name: Deploy container image to Cloud Run
+        env:
+          SEMVER: ${{ needs.git-release.outputs.semver }}
         run: |
           gcloud beta run deploy $SERVICE_NAME \
             --memory 256Mi \
             --execution-environment gen1 \
-            --image "${{ needs.build.outputs.image_tag }}" \
+            --image $REGION-docker.pkg.dev/$PROJECT_ID/docker-images/$SERVICE_NAME:$SEMVER.$GITHUB_SHA \
             --port $PORT \
             --project $PROJECT_ID \
             --region $REGION \
