@@ -2,6 +2,8 @@ package application
 
 import (
 	"context"
+	"crypto/sha512"
+	"encoding/hex"
 	"strings"
 
 	"github.com/yavurb/goyurback/internal/auth/domain"
@@ -16,16 +18,24 @@ func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name string) (*domain
 		return nil, err
 	}
 
-	keyString = strings.Join([]string{prefix, keyString}, "_")
+	sha512Hash := sha512.New()
+	sha512Hash.Write([]byte(keyString))
+	sha := sha512Hash.Sum(nil)
+	hashedApikey := hex.EncodeToString(sha)
 
-	// TODO: Hash the key before saving, and return the unhashed key
+	keySalt := strings.Split(keyString, ".")[0]
+	hashedApikeyWithSalt := strings.Join([]string{keySalt, hashedApikey}, ".")
 
 	apiKey := &domain.APIKeyCreate{
-		Key:  keyString,
+		Key:  hashedApikeyWithSalt,
 		Name: name,
 	}
 
 	createdKey, err := uc.repository.CreateAPIKey(ctx, apiKey)
+
+	keyString = strings.Join([]string{prefix, keyString}, "_")
+	createdKey.Key = keyString
+
 	if err != nil {
 		return nil, err
 	}

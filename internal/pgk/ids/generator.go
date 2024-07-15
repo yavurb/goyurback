@@ -26,11 +26,21 @@ func NewAPIKey() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	salt, err := rand.GenerateRandomString(32)
+	if err != nil {
+		return "", err
+	}
 
 	// Remove the special characters from the generated string
 	apiKey = strings.ReplaceAll(apiKey, "-", "")
 	apiKey = strings.ReplaceAll(apiKey, "_", "")
 	apiKey = strings.ReplaceAll(apiKey, "=", "")
+
+	salt = strings.ReplaceAll(salt, "=", "")
+	salt = strings.ReplaceAll(salt, "-", "")
+	salt = strings.ReplaceAll(salt, "_", "")
+
+	apiKey = strings.Join([]string{salt, apiKey}, ".")
 
 	return apiKey, nil
 }
