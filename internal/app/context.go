@@ -75,6 +75,15 @@ func (c *appContext) NewRouter() *echo.Echo {
 	authAPIKeyUcase := authApplication.NewAPIKeyUsecase(authAPIKeyRespository)
 	authUI.NewAuthRouter(e, authAPIKeyUcase)
 
+	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		KeyLookup: "header:x-api-key",
+		Validator: func(auth string, c echo.Context) (bool, error) {
+			isValid, err := authAPIKeyUcase.ValidateAPIKey(c.Request().Context(), auth)
+
+			return isValid, err
+		},
+	}))
+
 	return e
 }
 
