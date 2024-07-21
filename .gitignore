@@ -9,3 +9,9 @@ tmp
 
 # MacOS Files
 .DS_Store
+
+# Database related
+.db
+
+# Binary files
+bin/
