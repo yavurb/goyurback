@@ -3,6 +3,9 @@ latest_tag := $(shell git describe --tags &> /dev/null || git rev-parse --short 
 run: write_version
 	GO_ENV=dev go run cmd/goyurback/main.go
 
+build: write_version
+	go build -o bin/goyurback cmd/goyurback/main.go
+
 dev: write_version
 	air -c .air.toml
 
