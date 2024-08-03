@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -50,5 +51,24 @@ func TestGetProject(t *testing.T) {
 
 	if !reflect.DeepEqual(project, want) {
 		t.Errorf("Expected project to be %v, got: %v", want, project)
+	}
+}
+
+func TestGetProjectNotFound(t *testing.T) {
+	repo := &mocks.MockProjectsRepository{
+		GetProjectFn: func(ctx context.Context, id string) (*domain.Project, error) {
+			return nil, errors.New("project not found")
+		},
+	}
+
+	uc := NewProjectUsecase(repo)
+	project, err := uc.Get(context.Background(), "someid")
+
+	if !errors.Is(err, domain.ErrProjectNotFound) {
+		t.Errorf("Expected error to be %v, got: %v", domain.ErrProjectNotFound, err)
+	}
+
+	if project != nil {
+		t.Errorf("Expected project to be nil, got: %v", project)
 	}
 }
