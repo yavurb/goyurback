@@ -11,7 +11,9 @@ const (
 )
 
 type Post struct {
-	ID          int32
+	PublishedAt time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 	PublicID    string
 	Title       string
 	Author      string
@@ -19,9 +21,7 @@ type Post struct {
 	Status      Status
 	Description string
 	Content     string
-	PublishedAt time.Time
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          int32
 }
 
 type PostCreate struct {
