@@ -7,11 +7,15 @@ on:
       - main
     paths:
       - "**.go"
+      - go.mod
+      - go.sum
   pull_request:
     branches-ignore:
       - production
     paths:
       - "**.go"
+      - go.mod
+      - go.sum
 
 jobs:
   test:
