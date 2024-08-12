@@ -12,6 +12,8 @@ const (
 	lenght   = 12
 )
 
+var generateRandomString = rand.GenerateRandomString
+
 func NewPublicID(prefix string) (string, error) {
 	id, err := nanoid.Generate(alphabet, lenght)
 	if err != nil {
@@ -22,11 +24,11 @@ func NewPublicID(prefix string) (string, error) {
 }
 
 func NewAPIKey() (string, error) {
-	apiKey, err := rand.GenerateRandomString(64)
+	apiKey, err := generateRandomString(64)
 	if err != nil {
 		return "", err
 	}
-	salt, err := rand.GenerateRandomString(32)
+	salt, err := generateRandomString(32)
 	if err != nil {
 		return "", err
 	}
