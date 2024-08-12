@@ -6,12 +6,12 @@ on:
     branches:
       - main
     paths:
-      - internal/**
+      - "**.go"
   pull_request:
     branches-ignore:
       - production
     paths:
-      - internal/**
+      - "**.go"
 
 jobs:
   test:
