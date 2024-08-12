@@ -15,3 +15,8 @@ tmp
 
 # Binary files
 bin/
+
+# Test coverage
+coverage
+coverage.*
+.coverage
