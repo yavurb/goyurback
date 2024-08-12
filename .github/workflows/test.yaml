@@ -2,15 +2,14 @@ name: Test GoYurback
 
 on:
   workflow_dispatch:
-  pull_request:
   push:
     branches:
       - main
     paths:
       - internal/**
   pull_request:
-    branches:
-      - main
+    branches-ignore:
+      - production
     paths:
       - internal/**
 
