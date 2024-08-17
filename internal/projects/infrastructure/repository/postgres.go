@@ -26,7 +26,7 @@ func NewRepo(connpool *pgxpool.Pool) domain.ProjectRepository {
 }
 
 func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectCreate) (*domain.Project, error) {
-	var postID pgtype.Int4 = pgtype.Int4{Valid: false}
+	postID := pgtype.Int4{Valid: false}
 
 	if _postID := project.PostID; _postID != 0 {
 		postID = pgtype.Int4{Int32: project.PostID, Valid: true}
