@@ -35,7 +35,12 @@ func GetMigrations(t *testing.T, ctx context.Context) []string {
 	return files
 }
 
-func CreatePostgresContainer(t *testing.T, ctx context.Context) (*postgres.PostgresContainer, error) {
+type PostgresContainer struct {
+	Container  *postgres.PostgresContainer
+	ConnString string
+}
+
+func CreatePostgresContainer(t *testing.T, ctx context.Context) (*PostgresContainer, error) {
 	t.Helper()
 
 	migrations := GetMigrations(t, ctx)
@@ -58,5 +63,13 @@ func CreatePostgresContainer(t *testing.T, ctx context.Context) (*postgres.Postg
 		}
 	})
 
-	return pgContainer, nil
+	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
+	if err != nil {
+		t.Errorf("Could not get connection string: %v", err)
+	}
+
+	return &PostgresContainer{
+		Container:  pgContainer,
+		ConnString: connStr,
+	}, nil
 }

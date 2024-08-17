@@ -19,12 +19,7 @@ func TestPostgresRepository(t *testing.T) {
 		t.Errorf("Error creating container: %s", err)
 	}
 
-	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	connpool, err := pgxpool.New(ctx, connStr)
+	connpool, err := pgxpool.New(ctx, pgContainer.ConnString)
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
