@@ -19,6 +19,8 @@ const (
 )
 
 func GetMigrations(t *testing.T, ctx context.Context) []string {
+	t.Helper()
+
 	_, b, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Error("Unable to get caller information")
