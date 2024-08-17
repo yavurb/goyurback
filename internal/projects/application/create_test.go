@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/yavurb/goyurback/internal/projects/application/mocks"
@@ -13,7 +14,6 @@ import (
 func TestCreateProject(t *testing.T) {
 	want := &domain.Project{
 		ID:           1,
-		PublicID:     "someid",
 		Name:         "Some Project",
 		Description:  "Some Description",
 		Tags:         []string{"tag1", "tag2"},
@@ -27,7 +27,7 @@ func TestCreateProject(t *testing.T) {
 		CreateProjectFn: func(ctx context.Context, project *domain.ProjectCreate) (*domain.Project, error) {
 			return &domain.Project{
 				ID:           1,
-				PublicID:     "someid",
+				PublicID:     project.PublicID,
 				Name:         project.Name,
 				Description:  project.Description,
 				Tags:         project.Tags,
@@ -47,6 +47,12 @@ func TestCreateProject(t *testing.T) {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
+	rgx := regexp.MustCompile(`pr_[a-zA-Z0-9]{5}`)
+	if !rgx.MatchString(project.PublicID) {
+		t.Errorf("Expected PublicID to match the regex %s, got: %s", rgx.String(), project.PublicID)
+	}
+
+	want.PublicID = project.PublicID
 	if !reflect.DeepEqual(project, want) {
 		t.Errorf("Expected project to be %v, got: %v", want, project)
 	}

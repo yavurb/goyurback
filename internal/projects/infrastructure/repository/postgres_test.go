@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"reflect"
 	"testing"
 	"time"
 
@@ -31,7 +30,7 @@ func TestPostgresRepository(t *testing.T) {
 
 	want := &domain.Project{
 		ID:           1,
-		PublicID:     "someid",
+		PublicID:     "pr_18892",
 		Name:         "Some Project",
 		Description:  "Some Description",
 		Tags:         []string{"tag1", "tag2"},
@@ -48,6 +47,7 @@ func TestPostgresRepository(t *testing.T) {
 			testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
 
 			project, err := repo.CreateProject(ctx, &domain.ProjectCreate{
+				PublicID:     "pr_18892",
 				Name:         "Some Project",
 				Description:  "Some Description",
 				Tags:         []string{"tag1", "tag2"},
@@ -61,13 +61,7 @@ func TestPostgresRepository(t *testing.T) {
 			if project == nil {
 				t.Errorf("CreateProject() got = %v, want not nil", project)
 			}
-
-			// FIXME: These fields shouldn't be set here
-			want.PublicID = project.PublicID
-			want.CreatedAt = project.CreatedAt
-			want.UpdatedAt = project.UpdatedAt
-
-			if !reflect.DeepEqual(project, want) {
+			if !project.Compare(*want) {
 				t.Errorf("CreateProject() got = %v, want %v", project, want)
 			}
 		})
@@ -76,6 +70,7 @@ func TestPostgresRepository(t *testing.T) {
 			testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
 
 			project, err := repo.CreateProject(ctx, &domain.ProjectCreate{
+				PublicID:     "pr_18892",
 				Name:         "Some Project",
 				Description:  "Some Description",
 				Tags:         []string{"tag1", "tag2"},
@@ -102,6 +97,7 @@ func TestPostgresRepository(t *testing.T) {
 			testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
 
 			project_, err := repo.CreateProject(ctx, &domain.ProjectCreate{
+				PublicID:     "pr_18892",
 				Name:         "Some Project",
 				Description:  "Some Description",
 				Tags:         []string{"tag1", "tag2"},
@@ -120,13 +116,7 @@ func TestPostgresRepository(t *testing.T) {
 			if project == nil {
 				t.Errorf("GetProject() got = %v, want not nil", project)
 			}
-
-			// FIXME: These fields shouldn't be set here
-			want.PublicID = project.PublicID
-			want.CreatedAt = project.CreatedAt
-			want.UpdatedAt = project.UpdatedAt
-
-			if !reflect.DeepEqual(project, want) {
+			if !project.Compare(*want) {
 				t.Errorf("GetProject() got = %v, want %v", project, want)
 			}
 		})
