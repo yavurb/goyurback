@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 	"runtime"
+	"testing"
 	"time"
 
 	"github.com/testcontainers/testcontainers-go"
@@ -12,26 +13,32 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func GetMigrations() []string {
-	// FIXME: This is a hacky way to get the path to the migrations directory.
-	migrations := []string{
-		"20240323001046_initial.up.sql",
-		"20240714014750_apikeys.up.sql",
-		"20240715004121_variable_apikey_length.up.sql",
+const (
+	migrationsDir    = "../migrations"
+	migrationsSuffix = "up.sql"
+)
+
+func GetMigrations(t *testing.T, ctx context.Context) []string {
+	_, b, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Error("Unable to get caller information")
 	}
 
-	_, b, _, _ := runtime.Caller(0)
 	basePath := filepath.Dir(b)
+	migrationsAbsDir := filepath.Join(basePath, migrationsDir)
 
-	for i, migration := range migrations {
-		migrations[i] = filepath.Join(basePath, "../migrations", migration)
+	files, err := filepath.Glob(filepath.Join(migrationsAbsDir, "*"+migrationsSuffix))
+	if err != nil {
+		t.Errorf("Failed to read migrations: %v", err)
 	}
 
-	return migrations
+	return files
 }
 
-func CreatePostgresContainer(ctx context.Context) (*postgres.PostgresContainer, error) {
-	migrations := GetMigrations()
+func CreatePostgresContainer(t *testing.T, ctx context.Context) (*postgres.PostgresContainer, error) {
+	t.Helper()
+
+	migrations := GetMigrations(t, ctx)
 	pgContainer, err := postgres.Run(
 		ctx,
 		"postgres:16-alpine",
@@ -42,8 +49,14 @@ func CreatePostgresContainer(ctx context.Context) (*postgres.PostgresContainer, 
 		testcontainers.WithWaitStrategy(wait.ForLog("database system is ready to accept connections").WithOccurrence(2).WithStartupTimeout(5*time.Second)),
 	)
 	if err != nil {
-		log.Fatalf("Could not start postgres container: %s", err)
+		t.Errorf("Could not start postgres container: %v", err)
 	}
+
+	t.Cleanup(func() {
+		if err := pgContainer.Terminate(ctx); err != nil {
+			log.Fatalf("Could not terminate postgres container: %v", err)
+		}
+	})
 
 	return pgContainer, nil
 }

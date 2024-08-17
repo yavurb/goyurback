@@ -2,6 +2,7 @@ package application
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -66,7 +67,8 @@ func TestUpdate(t *testing.T) {
 	uc := NewPostUsecase(repo)
 
 	for _, test := range tests {
-		t.Run(structToString(test.toUpdate), func(t *testing.T) {
+		testName := fmt.Sprintf("it should update field %s", structToString(test.toUpdate))
+		t.Run(testName, func(t *testing.T) {
 			postUpdated, err := uc.Update(
 				context.Background(),
 				test.toUpdate.ID,

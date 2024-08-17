@@ -14,16 +14,10 @@ import (
 
 func TestPostgresRepository(t *testing.T) {
 	ctx := context.Background()
-	pgContainer, err := testhelpers.CreatePostgresContainer(ctx)
+	pgContainer, err := testhelpers.CreatePostgresContainer(t, ctx)
 	if err != nil {
-		t.Fatal(err)
+		t.Errorf("Error creating container: %s", err)
 	}
-
-	t.Cleanup(func() {
-		if err := pgContainer.Terminate(ctx); err != nil {
-			log.Fatalf("Could not terminate postgres container: %s", err)
-		}
-	})
 
 	connStr, err := pgContainer.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
