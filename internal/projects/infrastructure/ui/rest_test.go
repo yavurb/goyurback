@@ -3,68 +3,65 @@ package ui
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/google/go-cmp/cmp"
 	"github.com/labstack/echo/v4"
-	"github.com/yavurb/goyurback/internal/projects/application"
-	"github.com/yavurb/goyurback/internal/projects/infrastructure/repository"
+	"github.com/yavurb/goyurback/internal/projects/domain"
+	"github.com/yavurb/goyurback/internal/projects/infrastructure/ui/mocks"
 	"github.com/yavurb/goyurback/testhelpers"
 )
 
 func TestCreateProject(t *testing.T) {
 	e := echo.New()
 
-	ctx := context.Background()
-	pgContainer, err := testhelpers.CreatePostgresContainer(t, ctx)
-	if err != nil {
-		t.Errorf("Error creating container: %s", err)
-	}
-
-	connpool, err := pgxpool.New(ctx, pgContainer.ConnString)
-	if err != nil {
-		log.Fatalf("Unable to create connection pool: %v\n", err)
-	}
-	t.Cleanup(func() { connpool.Close() })
-
-	project := map[string]any{
+	want := map[string]any{
+		"id":            "pr_12345",
 		"name":          "test",
 		"description":   "Some project description",
 		"tags":          []string{"tag1", "tag2", "tag3"},
 		"thumbnail_url": "https://example.com/image.jpg",
 		"website_url":   "https://example.com",
 		"live":          true,
+		"created_at":    time.Now().UTC().Format(time.RFC3339),
+		"updated_at":    time.Now().UTC().Format(time.RFC3339),
 	}
-	rec := httptest.NewRecorder()
 
 	t.Run("it should create a project", func(t *testing.T) {
-		testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
-
-		want := map[string]any{
-			"id":            1,
-			"name":          "test",
-			"description":   "Some project description",
-			"tags":          []string{"tag1", "tag2", "tag3"},
-			"thumbnail_url": "https://example.com/image.jpg",
-			"website_url":   "https://example.com",
-			"live":          true,
-		}
-
-		jsonString, err := json.Marshal(project)
+		jsonBytes, err := json.Marshal(want)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(string(jsonString)))
+		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(string(jsonBytes)))
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
 
-		repo := repository.NewRepo(connpool)
-		uc := application.NewProjectUsecase(repo)
+		uc := &mocks.MockProjectsUsecase{
+			CreateFn: func(ctx context.Context, name, description, thumbnailURL, websiteURL string, live bool, tags []string, postId int32) (*domain.Project, error) {
+				createdAt, _ := time.Parse(time.RFC3339, want["created_at"].(string))
+				updatedAt, _ := time.Parse(time.RFC3339, want["updated_at"].(string))
+				return &domain.Project{
+					ID:           1,
+					PublicID:     "pr_12345",
+					Name:         name,
+					Description:  description,
+					ThumbnailURL: thumbnailURL,
+					WebsiteURL:   websiteURL,
+					Live:         live,
+					Tags:         tags,
+					PostID:       postId,
+					CreatedAt:    createdAt,
+					UpdatedAt:    updatedAt,
+				}, nil
+			},
+		}
 		h := NewProjectsRouter(e, uc)
 
 		err = h.createProject(c)
@@ -78,15 +75,44 @@ func TestCreateProject(t *testing.T) {
 		if err = json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 			t.Errorf("Error unmarshalling response: %s", err)
 		}
-		want["id"] = got["id"]
-		want["created_at"] = got["created_at"]
-		want["updated_at"] = got["updated_at"]
 
-		wantStr, _ := json.Marshal(want)
-		gotStr, _ := json.Marshal(got)
+		if !testhelpers.CompareMaps(want, got) {
+			t.Errorf("createProject() mismatch:\n%s", cmp.Diff(want, got))
+		}
+	})
 
-		if string(wantStr) != string(gotStr) {
-			t.Errorf("createProject() = %s, want %s", string(gotStr), string(wantStr))
+	t.Run("it should return an error", func(t *testing.T) {
+		project := map[string]any{
+			"name":          "test",
+			"description":   "Some project description",
+			"tags":          []string{"tag1", "tag2", "tag3"},
+			"thumbnail_url": "https://example.com/image.jpg",
+			"website_url":   "https://example.com",
+			"live":          "true",
+		}
+		jsonBytes, err := json.Marshal(project)
+		if err != nil {
+			t.Fatal(err)
+		}
+		payload := strings.NewReader(string(jsonBytes))
+
+		req := httptest.NewRequest(http.MethodPost, "/projects", payload)
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		uc := &mocks.MockProjectsUsecase{}
+
+		h := NewProjectsRouter(e, uc)
+		err = h.createProject(c)
+		if err == nil {
+			t.Errorf("createProject() error = %v, want an error", err)
+		}
+		if !errors.Is(err, echo.ErrUnprocessableEntity) {
+			t.Errorf("createProject() error = %v, want %v", err, echo.ErrUnprocessableEntity)
+		}
+		if !strings.Contains(err.Error(), "Invalid request body") {
+			t.Errorf("createProject() body = %v, want %v", rec.Body.String(), "Invalid request body")
 		}
 	})
 }
