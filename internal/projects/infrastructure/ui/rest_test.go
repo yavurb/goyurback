@@ -170,3 +170,107 @@ func TestCreateProject(t *testing.T) {
 		}
 	})
 }
+
+func TestGetProject(t *testing.T) {
+	e := echo.New()
+
+	t.Run("it should get a project", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/projects/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("pr_12345")
+
+		uc := &mocks.MockProjectsUsecase{}
+		h := NewProjectsRouter(e, uc)
+
+		want := map[string]any{
+			"id":            "pr_12345",
+			"name":          "test",
+			"description":   "Some project description",
+			"tags":          []string{"tag1", "tag2", "tag3"},
+			"thumbnail_url": "https://example.com/image.jpg",
+			"website_url":   "https://example.com",
+			"live":          true,
+			"created_at":    time.Now().UTC().Format(time.RFC3339Nano),
+			"updated_at":    time.Now().UTC().Format(time.RFC3339Nano),
+		}
+
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Project, error) {
+			if id != "pr_12345" {
+				return nil, domain.ErrProjectNotFound
+			}
+
+			createdAt, _ := time.Parse(time.RFC3339, want["created_at"].(string))
+			updatedAt, _ := time.Parse(time.RFC3339, want["updated_at"].(string))
+
+			return &domain.Project{
+				ID:           1,
+				PublicID:     "pr_12345",
+				Name:         "test",
+				Description:  "Some project description",
+				ThumbnailURL: "https://example.com/image.jpg",
+				WebsiteURL:   "https://example.com",
+				Live:         true,
+				Tags:         []string{"tag1", "tag2", "tag3"},
+				PostID:       1,
+				CreatedAt:    createdAt,
+				UpdatedAt:    updatedAt,
+			}, nil
+		}
+
+		err := h.getProject(c)
+		if err != nil {
+			t.Errorf("getProject() error = %v, want no error", err)
+		}
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("getProject() status = %v, want %v", rec.Code, http.StatusOK)
+		}
+
+		got := make(map[string]any)
+		if err = json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Errorf("Error unmarshalling response: %s", err)
+		}
+
+		if !testhelpers.CompareMaps(want, got) {
+			t.Errorf("getProject() mismatch:\n%s", cmp.Diff(want, got))
+		}
+	})
+
+	t.Run("it should return a bad request error", func(t *testing.T) {
+		t.Skip("Test not implemented yet")
+	})
+
+	t.Run("it should return a not found error", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/projects/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/projects/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("pr_12345")
+
+		uc := &mocks.MockProjectsUsecase{}
+		h := NewProjectsRouter(e, uc)
+
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Project, error) {
+			return nil, domain.ErrProjectNotFound
+		}
+
+		err := h.getProject(c)
+		if err == nil {
+			t.Errorf("getProject() error = %v, want an error", err)
+		}
+
+		if !errors.Is(err, echo.ErrNotFound) {
+			t.Errorf("getProject() error = %v, want %v", err, echo.ErrNotFound)
+		}
+
+		if !strings.Contains(err.Error(), "Project not found") {
+			t.Errorf("getProject() body = %v, want %v", rec.Body.String(), "Project not found")
+		}
+	})
+}
