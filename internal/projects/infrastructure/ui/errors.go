@@ -11,7 +11,10 @@ type HTTPError struct {
 }
 
 func (e HTTPError) InternalServerError() error {
-	return echo.NewHTTPError(http.StatusInternalServerError, e.Message)
+	err := echo.ErrInternalServerError
+	err.Message = e.Message
+
+	return err
 }
 
 func (e HTTPError) BadRequest() error {
@@ -36,7 +39,6 @@ func (e HTTPError) Conflict() error {
 
 func (e HTTPError) ErrUnprocessableEntity() error {
 	err := echo.ErrUnprocessableEntity
-
 	err.Message = e.Message
 
 	return err

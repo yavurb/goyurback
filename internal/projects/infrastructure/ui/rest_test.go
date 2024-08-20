@@ -84,6 +84,53 @@ func TestCreateProject(t *testing.T) {
 		}
 	})
 
+	t.Run("it should return an internal server error", func(t *testing.T) {
+		project := map[string]any{
+			"name":          "test",
+			"description":   "Some project description",
+			"tags":          []string{"tag1", "tag2", "tag3"},
+			"thumbnail_url": "https://example.com/image.jpg",
+			"website_url":   "https://example.com",
+			"live":          true,
+		}
+
+		jsonBytes, err := json.Marshal(project)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		payload := strings.NewReader(string(jsonBytes))
+		req := httptest.NewRequest(http.MethodPost, "/projects", payload)
+
+		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+		uc := &mocks.MockProjectsUsecase{CreateFn: func(
+			ctx context.Context,
+			name, description, thumbnailURL, websiteURL string,
+			live bool,
+			tags []string,
+			postId int32,
+		) (*domain.Project, error) {
+			return nil, errors.New("Unknown usecase error")
+		}}
+		h := NewProjectsRouter(e, uc)
+
+		err = h.createProject(c)
+		if err == nil {
+			t.Errorf("createProject() error = %v, want an error", err)
+		}
+
+		if !errors.Is(err, echo.ErrInternalServerError) {
+			t.Errorf("createProject() error = %v, want %v", err, echo.ErrInternalServerError)
+		}
+
+		if !strings.Contains(err.Error(), "Internal server error") {
+			t.Errorf("createProject() body = %v, want %v", rec.Body.String(), "Invalid request body")
+		}
+	})
+
 	t.Run("it should return an error", func(t *testing.T) {
 		project := map[string]any{
 			"name":          "test",
