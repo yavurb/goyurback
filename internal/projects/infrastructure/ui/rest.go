@@ -29,6 +29,7 @@ func (ctx *projectRouterCtx) createProject(c echo.Context) error {
 
 	if err := c.Bind(&project); err != nil {
 		c.Logger().Error(err)
+
 		return HTTPError{
 			Message: "Invalid request body",
 		}.ErrUnprocessableEntity()
@@ -38,7 +39,7 @@ func (ctx *projectRouterCtx) createProject(c echo.Context) error {
 		c.Request().Context(), project.Name, project.Description, project.ThumbnailURL, project.WebsiteURL, project.Live, project.Tags, project.PostId,
 	)
 	if err != nil {
-		handleErr(err)
+		return handleErr(err)
 	}
 
 	projectOut := &ProjectOut{

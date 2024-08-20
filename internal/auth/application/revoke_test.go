@@ -15,8 +15,8 @@ func TestRevokeAPIKey(t *testing.T) {
 	}
 
 	uc := NewAPIKeyUsecase(repo)
-
 	ctx := context.Background()
+
 	err := uc.RevokeAPIKey(ctx, "random-id")
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)

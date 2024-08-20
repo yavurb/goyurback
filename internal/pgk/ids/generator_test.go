@@ -10,10 +10,12 @@ import (
 func TestNewPublicID(t *testing.T) {
 	t.Run("it should generate random public id", func(t *testing.T) {
 		prefix := "prefix"
+
 		got, err := NewPublicID(prefix)
 		if err != nil {
 			t.Errorf("GenerateID() error = %v, want nil", err)
 		}
+
 		if !strings.HasPrefix(got, prefix) {
 			t.Errorf("GenerateID() = %v, want to has prefix %v", got, prefix)
 		}
@@ -36,6 +38,7 @@ func TestNewAPIKey(t *testing.T) {
 		if !regexp.MustCompile(pattern).MatchString(got) {
 			t.Errorf("GenerateAPIKey() = %v, want to satisfy patter: %v", got, pattern)
 		}
+
 		secondGot, _ := NewAPIKey()
 		if got == secondGot {
 			t.Errorf("GenerateAPIKey() = %v, want different", got)
@@ -50,6 +53,7 @@ func TestNewAPIKey(t *testing.T) {
 		if err == nil {
 			t.Error("GenerateAPIKey() error is nil, want error")
 		}
+
 		if err.Error() != errorMessage {
 			t.Errorf(`GenerateAPIKey() error = %v, want "%v"`, err, errorMessage)
 		}
@@ -71,6 +75,7 @@ func TestNewAPIKey(t *testing.T) {
 		if err == nil {
 			t.Error("GenerateAPIKey() error is nil, want error")
 		}
+
 		if err.Error() != errorMessage {
 			t.Errorf(`GenerateAPIKey() error = %v, want "%v"`, err, errorMessage)
 		}

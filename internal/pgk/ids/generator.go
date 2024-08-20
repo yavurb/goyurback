@@ -9,13 +9,13 @@ import (
 
 const (
 	alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"
-	lenght   = 12
+	length   = 12
 )
 
 var generateRandomString = rand.GenerateRandomString
 
 func NewPublicID(prefix string) (string, error) {
-	id, err := nanoid.Generate(alphabet, lenght)
+	id, err := nanoid.Generate(alphabet, length)
 	if err != nil {
 		return "", err
 	}
@@ -28,6 +28,7 @@ func NewAPIKey() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	salt, err := generateRandomString(32)
 	if err != nil {
 		return "", err

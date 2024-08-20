@@ -48,7 +48,9 @@ func main() {
 
 	<-ctx.Done()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
 	defer cancel()
+
 	if err := app.Shutdown(ctx); err != nil {
 		app.Logger.Fatal(err)
 	}

@@ -47,6 +47,7 @@ func NewAppContext() *appContext {
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
+
 	appCtx.Connpool = connpool
 
 	return appCtx

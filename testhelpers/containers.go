@@ -46,6 +46,7 @@ func CreatePostgresContainer(t *testing.T, ctx context.Context) (*PostgresContai
 	t.Helper()
 
 	migrations := GetMigrations(t, ctx)
+
 	pgContainer, err := postgres.Run(
 		ctx,
 		"postgres:16-alpine",

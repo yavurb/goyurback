@@ -82,9 +82,11 @@ func TestUpdate(t *testing.T) {
 			if err != nil {
 				t.Errorf("Expected no error, got: %v", err)
 			}
+
 			if postUpdated == nil {
 				t.Errorf("Expected post to be %v, got: %v", test.want, postUpdated)
 			}
+
 			if !reflect.DeepEqual(postUpdated, test.want) {
 				t.Errorf("Expected post to be %v, got: %v", test.want, postUpdated)
 			}
@@ -98,18 +100,23 @@ func structToString(post postUpdate) string {
 	if post.Status != nil {
 		parts = append(parts, "status")
 	}
+
 	if post.Title != nil {
 		parts = append(parts, "title")
 	}
+
 	if post.Author != nil {
 		parts = append(parts, "author")
 	}
+
 	if post.Slug != nil {
 		parts = append(parts, "slug")
 	}
+
 	if post.Description != nil {
 		parts = append(parts, "description")
 	}
+
 	if post.Content != nil {
 		parts = append(parts, "content")
 	}

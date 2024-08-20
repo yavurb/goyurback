@@ -18,18 +18,23 @@ func (uc *postUsecase) Update(ctx context.Context, id string, title, author, slu
 	if title != nil {
 		post.Title = *title
 	}
+
 	if author != nil {
 		post.Author = *author
 	}
+
 	if slug != nil {
 		post.Slug = *slug
 	}
+
 	if description != nil {
 		post.Description = *description
 	}
+
 	if content != nil {
 		post.Content = *content
 	}
+
 	if status != nil {
 		post.Status = *status
 	}

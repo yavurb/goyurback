@@ -26,18 +26,16 @@ func TestCreateAPIKey(t *testing.T) {
 	uc := NewAPIKeyUsecase(repo)
 
 	ctx := context.Background()
-	apikey, err := uc.CreateAPIKey(ctx, "test")
 
+	apikey, err := uc.CreateAPIKey(ctx, "test")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
-	}
-	if apikey == nil {
-		t.Errorf("Expected apikey, got nil")
 	}
 
 	if !strings.HasPrefix(apikey.Key, "sk") {
 		t.Errorf("Expected key to start with 'sk', got %s", apikey.Key)
 	}
+
 	if apikey.PublicID != "test" {
 		t.Errorf("Expected publicID to be 'test', got %s", apikey.PublicID)
 	}
@@ -46,6 +44,7 @@ func TestCreateAPIKey(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error matching api key: %v", err)
 	}
+
 	if !match {
 		t.Errorf("Expected key to match regex pattern xx_xxx+.xxxxxx+, got %s", apikey.Key)
 	}

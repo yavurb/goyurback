@@ -39,10 +39,11 @@ func TestCreateProject(t *testing.T) {
 		}
 
 		req := httptest.NewRequest(http.MethodPost, "/projects", strings.NewReader(string(jsonBytes)))
+
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
-
 		uc := &mocks.MockProjectsUsecase{
 			CreateFn: func(ctx context.Context, name, description, thumbnailURL, websiteURL string, live bool, tags []string, postId int32) (*domain.Project, error) {
 				createdAt, _ := time.Parse(time.RFC3339, want["created_at"].(string))
@@ -68,9 +69,11 @@ func TestCreateProject(t *testing.T) {
 		if err != nil {
 			t.Errorf("createProject() error = %v, want no error", err)
 		}
+
 		if rec.Code != http.StatusCreated {
 			t.Errorf("createProject() status = %v, want %v", rec.Code, http.StatusCreated)
 		}
+
 		got := make(map[string]any)
 		if err = json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
 			t.Errorf("Error unmarshalling response: %s", err)
@@ -90,27 +93,31 @@ func TestCreateProject(t *testing.T) {
 			"website_url":   "https://example.com",
 			"live":          "true",
 		}
+
 		jsonBytes, err := json.Marshal(project)
 		if err != nil {
 			t.Fatal(err)
 		}
-		payload := strings.NewReader(string(jsonBytes))
 
+		payload := strings.NewReader(string(jsonBytes))
 		req := httptest.NewRequest(http.MethodPost, "/projects", payload)
+
 		req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+
 		rec := httptest.NewRecorder()
 		c := e.NewContext(req, rec)
-
 		uc := &mocks.MockProjectsUsecase{}
-
 		h := NewProjectsRouter(e, uc)
+
 		err = h.createProject(c)
 		if err == nil {
 			t.Errorf("createProject() error = %v, want an error", err)
 		}
+
 		if !errors.Is(err, echo.ErrUnprocessableEntity) {
 			t.Errorf("createProject() error = %v, want %v", err, echo.ErrUnprocessableEntity)
 		}
+
 		if !strings.Contains(err.Error(), "Invalid request body") {
 			t.Errorf("createProject() body = %v, want %v", rec.Body.String(), "Invalid request body")
 		}

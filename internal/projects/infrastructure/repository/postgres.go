@@ -12,8 +12,6 @@ import (
 	"github.com/yavurb/goyurback/internal/projects/domain"
 )
 
-const prefix = "pr"
-
 type Repository struct {
 	db *postgres.Queries
 }
