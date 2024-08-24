@@ -230,4 +230,123 @@ func TestGetPosts(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("it should return an empty slice", func(t *testing.T) {
+		conn, err := pgxpool.New(ctx, pgContainer.ConnString)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Cleanup(func() { conn.Close() })
+
+		repo := NewRepo(conn)
+		want := []*domain.Post{}
+
+		got, err := repo.GetPosts(ctx)
+		if err != nil {
+			t.Errorf("Got error getting posts, want no error: %v", err)
+		}
+
+		if !cmp.Equal(want, got) {
+			t.Errorf("Mismatch getting posts, (-want,+got):\n%s", cmp.Diff(want, got))
+		}
+	})
+}
+
+func TestPostUpdate(t *testing.T) {
+	ctx := context.Background()
+
+	pgContainer, err := testhelpers.CreatePostgresContainer(t, ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	conn, err := pgxpool.New(ctx, pgContainer.ConnString)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() { conn.Close() })
+
+	repo := NewRepo(conn)
+
+	t.Run("it should update a post", func(t *testing.T) {
+		testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
+
+		postCreated, err := repo.CreatePost(ctx, &domain.PostCreate{
+			PublicID:    "po_18892",
+			Title:       "My Post",
+			Author:      "Roy",
+			Slug:        "my-post",
+			Description: "my post description",
+			Content:     "# My Post\n\nThis is my post content.",
+		})
+		if err != nil {
+			t.Errorf("Got error creating post, want no error: %v", err)
+		}
+
+		postUpdated := *postCreated
+
+		postUpdated.PublicID = "po_18892"
+		postUpdated.Title = "My Post Alt"
+		postUpdated.Author = "Roy Perez"
+		postUpdated.Slug = "my-post-alt"
+		postUpdated.Status = domain.Published
+		postUpdated.Description = "my post description alt"
+		postUpdated.Content = "# My Post\n\nThis is my post content alt."
+		postUpdated.PublishedAt = time.Now().UTC()
+
+		got, err := repo.UpdatePost(ctx, &postUpdated)
+		if err != nil {
+			t.Errorf("Got error updating post, want no error: %v", err)
+		}
+
+		postUpdated.UpdatedAt = got.UpdatedAt
+
+		if !cmp.Equal(&postUpdated, got) {
+			t.Errorf("Mismatch updating post (-want,+got):\n%s", cmp.Diff(&postUpdated, got))
+		}
+	})
+
+	t.Run("it should return an error if a post does not exists", func(t *testing.T) {
+		testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
+
+		conn, err := pgxpool.New(ctx, pgContainer.ConnString)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Cleanup(func() { conn.Close() })
+
+		repo := NewRepo(conn)
+
+		postCreated, err := repo.CreatePost(ctx, &domain.PostCreate{
+			PublicID:    "po_18892",
+			Title:       "My Post",
+			Author:      "Roy",
+			Slug:        "my-post",
+			Description: "my post description",
+			Content:     "# My Post\n\nThis is my post content.",
+		})
+		if err != nil {
+			t.Errorf("Got error creating post, want no error: %v", err)
+		}
+
+		postUpdated := *postCreated
+
+		postUpdated.ID = 1000
+		postUpdated.PublicID = "po_18893"
+		postUpdated.Title = "My Post Alt"
+		postUpdated.Author = "Roy Perez"
+		postUpdated.Slug = "my-post-alt"
+		postUpdated.Status = domain.Published
+		postUpdated.Description = "my post description alt"
+		postUpdated.Content = "# My Post\n\nThis is my post content alt."
+		postUpdated.PublishedAt = time.Now().UTC()
+
+		_, err = repo.UpdatePost(ctx, &postUpdated)
+		if err == nil {
+			t.Error("Got no error updating post, want error")
+		}
+	})
 }
