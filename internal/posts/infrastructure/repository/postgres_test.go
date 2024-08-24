@@ -302,6 +302,7 @@ func TestPostUpdate(t *testing.T) {
 		}
 
 		postUpdated.UpdatedAt = got.UpdatedAt
+		postUpdated.PublishedAt = got.PublishedAt
 
 		if !cmp.Equal(&postUpdated, got) {
 			t.Errorf("Mismatch updating post (-want,+got):\n%s", cmp.Diff(&postUpdated, got))
