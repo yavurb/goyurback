@@ -133,8 +133,6 @@ func TestGetPost(t *testing.T) {
 
 	// NOTE: This test has its own database because a an error with cached data types in postgres
 	t.Run("it should return a not found error", func(t *testing.T) {
-		testhelpers.CleanDatabase(t, ctx, pgContainer.ConnString)
-
 		conn, err := pgxpool.New(ctx, pgContainer.ConnString)
 		if err != nil {
 			t.Fatal(err)
