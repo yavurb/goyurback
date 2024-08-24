@@ -1,14 +1,14 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
+	"context"
 	_ "embed"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/yavurb/goyurback/internal/app"
 )
@@ -36,25 +36,22 @@ func main() {
 	`, Version)
 	fmt.Println()
 
-	caCertFile, err := os.ReadFile("certs/cert.pem")
-	if err != nil {
-		log.Fatal(err)
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCertFile)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer stop()
 
-	mtlsConfig := &tls.Config{
-		ClientCAs:  caCertPool,
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		MinVersion: tls.VersionTLS13,
-	}
+	go func() {
+		host := fmt.Sprintf("0.0.0.0:%s", appCtx.Settings.Port)
+		if err := app.Start(host); err != nil && err != http.ErrServerClosed {
+			app.Logger.Fatal("shutting down the server", err)
+		}
+	}()
 
-	host := fmt.Sprintf("0.0.0.0:%s", appCtx.Settings.Port)
-	server := http.Server{
-		Addr:      host,
-		Handler:   app,
-		TLSConfig: mtlsConfig,
-	}
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 
-	app.Logger.Fatal(server.ListenAndServeTLS("certs/cert.pem", "certs/key.pem"))
+	defer cancel()
+
+	if err := app.Shutdown(ctx); err != nil {
+		app.Logger.Fatal(err)
+	}
 }

@@ -12,3 +12,13 @@ tmp
 
 # Certificates
 *.pem
+# Database related
+.db
+
+# Binary files
+bin/
+
+# Test coverage
+coverage
+coverage.*
+.coverage

@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS build
+FROM golang:1.23-alpine AS build
 
 ENV GOOS=linux
 
@@ -13,7 +13,7 @@ COPY internal internal/
 # RUN go test ./...
 RUN go build -o /app/goyurback ./cmd/goyurback/main.go
 
-FROM alpine:3.19
+FROM alpine:3.20
 
 WORKDIR /app
 

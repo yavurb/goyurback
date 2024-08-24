@@ -9,7 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/chikitos/domain"
 	"github.com/yavurb/goyurback/internal/database/postgres"
-	"github.com/yavurb/goyurback/internal/pgk/publicid"
+	"github.com/yavurb/goyurback/internal/pgk/ids"
 )
 
 const prefix = "ch"
@@ -24,7 +24,7 @@ func NewRepo(connpool *pgxpool.Pool) domain.ChikitoRepository {
 }
 
 func (r *Repository) CreateChikito(ctx context.Context, url, description string) (*domain.Chikito, error) {
-	publicID, err := publicid.New(prefix)
+	publicID, err := ids.NewPublicID(prefix)
 	if err != nil {
 		log.Printf("Error creating public id for chikito: %v\n", err)
 

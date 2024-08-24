@@ -9,11 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
-	"github.com/yavurb/goyurback/internal/pgk/publicid"
 	"github.com/yavurb/goyurback/internal/projects/domain"
 )
-
-const prefix = "pr"
 
 type Repository struct {
 	db *postgres.Queries
@@ -26,16 +23,14 @@ func NewRepo(connpool *pgxpool.Pool) domain.ProjectRepository {
 }
 
 func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectCreate) (*domain.Project, error) {
-	var postID pgtype.Int4 = pgtype.Int4{Valid: false}
+	postID := pgtype.Int4{Valid: false}
 
 	if _postID := project.PostID; _postID != 0 {
 		postID = pgtype.Int4{Int32: project.PostID, Valid: true}
 	}
 
-	publicID, _ := publicid.New(prefix) // TODO: Handle error and add a retry mechanism to validate if the id already exists
-
 	project_, err := r.db.CreateProject(ctx, postgres.CreateProjectParams{
-		PublicID:     publicID,
+		PublicID:     project.PublicID,
 		Name:         project.Name,
 		Description:  project.Description,
 		Tags:         project.Tags,
@@ -44,7 +39,6 @@ func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectC
 		Live:         project.Live,
 		PostID:       postID,
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +50,6 @@ func (r *Repository) CreateProject(ctx context.Context, project *domain.ProjectC
 
 func (r *Repository) GetProject(ctx context.Context, id string) (*domain.Project, error) {
 	project_, err := r.db.GetProject(ctx, id)
-
 	if err != nil {
 		log.Printf("DB Error getting project: %v\n", err)
 
@@ -74,7 +67,6 @@ func (r *Repository) GetProject(ctx context.Context, id string) (*domain.Project
 
 func (r *Repository) GetProjects(ctx context.Context) ([]*domain.Project, error) {
 	projects_, err := r.db.GetProjects(ctx)
-
 	if err != nil {
 		log.Printf("DB Error obtaining projects: %v", err)
 

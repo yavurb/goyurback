@@ -65,7 +65,6 @@ func (ctx *postRouterCtx) getPost(c echo.Context) error {
 	}
 
 	post, err := ctx.postUsecase.Get(c.Request().Context(), params.ID)
-
 	if err != nil {
 		return handleErr(err)
 	}
@@ -88,7 +87,6 @@ func (ctx *postRouterCtx) getPost(c echo.Context) error {
 
 func (ctx *postRouterCtx) getPosts(c echo.Context) error {
 	posts, err := ctx.postUsecase.GetPosts(c.Request().Context())
-
 	if err != nil {
 		return handleErr(err)
 	}
@@ -125,7 +123,6 @@ func (ctx *postRouterCtx) updatePost(c echo.Context) error {
 	}
 
 	post_, err := ctx.postUsecase.Update(c.Request().Context(), post.ID, post.Title, post.Author, post.Slug, post.Description, post.Content, post.Status)
-
 	if err != nil {
 		return handleErr(err)
 	}

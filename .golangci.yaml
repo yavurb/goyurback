@@ -1,0 +1,13 @@
+linters:
+  disable-all: false
+  enable:
+    - gofmt
+    - gosec
+    - goimports
+    - misspell
+    - gocognit
+    - goconst
+    - gocritic
+    - gochecknoinits
+    - wastedassign
+    - wsl

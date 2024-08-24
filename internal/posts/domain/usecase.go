@@ -9,5 +9,5 @@ type PostUsecase interface {
 	GetPosts(ctx context.Context) ([]*Post, error)
 	// GetBySlug(slug string) (*Post, error)
 	Create(ctx context.Context, title, author, slug, description, content string) (*Post, error)
-	Update(ctx context.Context, id string, title, author, slug, description, content string, status Status) (*Post, error)
+	Update(ctx context.Context, id string, title, author, slug, description, content *string, status *Status) (*Post, error)
 }

@@ -20,6 +20,10 @@ import (
 	projectRepository "github.com/yavurb/goyurback/internal/projects/infrastructure/repository"
 	projectUI "github.com/yavurb/goyurback/internal/projects/infrastructure/ui"
 
+	authApplication "github.com/yavurb/goyurback/internal/auth/application"
+	authRepository "github.com/yavurb/goyurback/internal/auth/infrastructure/repository"
+	authUI "github.com/yavurb/goyurback/internal/auth/infrastructure/ui"
+
 	chikitoApplication "github.com/yavurb/goyurback/internal/chikitos/application"
 	chikitoRepository "github.com/yavurb/goyurback/internal/chikitos/infrastructure/repository"
 	chikitoUI "github.com/yavurb/goyurback/internal/chikitos/infrastructure/ui"
@@ -47,11 +51,13 @@ func NewAppContext() *appContext {
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
+
 	appCtx.Connpool = connpool
 
 	return appCtx
 }
 
+// TODO: Add custom validator
 func (c *appContext) NewRouter() *echo.Echo {
 	e := echo.New()
 
@@ -73,6 +79,19 @@ func (c *appContext) NewRouter() *echo.Echo {
 	chikitoRespository := chikitoRepository.NewRepo(c.Connpool)
 	chikitoUcase := chikitoApplication.NewChikitoUsecase(chikitoRespository)
 	chikitoUI.NewChikitosRouter(e, chikitoUcase)
+
+	authAPIKeyRespository := authRepository.NewAPIKeyRepo(c.Connpool)
+	authAPIKeyUcase := authApplication.NewAPIKeyUsecase(authAPIKeyRespository)
+	authUI.NewAuthRouter(e, authAPIKeyUcase)
+
+	e.Use(middleware.KeyAuthWithConfig(middleware.KeyAuthConfig{
+		KeyLookup: "header:x-api-key",
+		Validator: func(auth string, c echo.Context) (bool, error) {
+			isValid, err := authAPIKeyUcase.ValidateAPIKey(c.Request().Context(), auth)
+
+			return isValid, err
+		},
+	}))
 
 	return e
 }

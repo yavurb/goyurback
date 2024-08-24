@@ -9,7 +9,6 @@ import (
 
 func (uc *projectUsecase) GetProjects(ctx context.Context) ([]*domain.Project, error) {
 	projects, err := uc.repository.GetProjects(ctx)
-
 	if err != nil {
 		log.Printf("Error getting projects. Got: %v\n", err)
 

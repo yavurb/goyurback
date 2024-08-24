@@ -11,7 +11,7 @@ type projectRouterCtx struct {
 	projectUsecase domain.ProjectUsecase
 }
 
-func NewProjectsRouter(e *echo.Echo, projectUsecase domain.ProjectUsecase) {
+func NewProjectsRouter(e *echo.Echo, projectUsecase domain.ProjectUsecase) *projectRouterCtx {
 	routerGroup := e.Group("/projects")
 	routerCtx := &projectRouterCtx{
 		projectUsecase,
@@ -20,12 +20,16 @@ func NewProjectsRouter(e *echo.Echo, projectUsecase domain.ProjectUsecase) {
 	routerGroup.POST("", routerCtx.createProject)
 	routerGroup.GET("", routerCtx.getProjects)
 	routerGroup.GET("/:id", routerCtx.getProject)
+
+	return routerCtx
 }
 
 func (ctx *projectRouterCtx) createProject(c echo.Context) error {
 	var project ProjectIn
 
 	if err := c.Bind(&project); err != nil {
+		c.Logger().Error(err)
+
 		return HTTPError{
 			Message: "Invalid request body",
 		}.ErrUnprocessableEntity()
@@ -34,9 +38,8 @@ func (ctx *projectRouterCtx) createProject(c echo.Context) error {
 	project_, err := ctx.projectUsecase.Create(
 		c.Request().Context(), project.Name, project.Description, project.ThumbnailURL, project.WebsiteURL, project.Live, project.Tags, project.PostId,
 	)
-
 	if err != nil {
-		handleErr(err)
+		return handleErr(err)
 	}
 
 	projectOut := &ProjectOut{
@@ -64,7 +67,6 @@ func (ctx *projectRouterCtx) getProject(c echo.Context) error {
 	}
 
 	project_, err := ctx.projectUsecase.Get(c.Request().Context(), params.ID)
-
 	if err != nil {
 		return handleErr(err)
 	}
@@ -86,7 +88,6 @@ func (ctx *projectRouterCtx) getProject(c echo.Context) error {
 
 func (ctx *projectRouterCtx) getProjects(c echo.Context) error {
 	projects, err := ctx.projectUsecase.GetProjects(c.Request().Context())
-
 	if err != nil {
 		return handleErr(err)
 	}

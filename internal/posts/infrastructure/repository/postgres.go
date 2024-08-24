@@ -9,11 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
-	"github.com/yavurb/goyurback/internal/pgk/publicid"
 	"github.com/yavurb/goyurback/internal/posts/domain"
 )
-
-const prefix = "po"
 
 type Repository struct {
 	db *postgres.Queries
@@ -28,19 +25,16 @@ func NewRepo(connpool *pgxpool.Pool) domain.PostRepository {
 }
 
 func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*domain.Post, error) {
-	id, _ := publicid.New(prefix) // TODO: handle errors and validate if the id already exists
-
 	post_, err := r.db.CreatePost(ctx, postgres.CreatePostParams{
-		PublicID:    id,
+		PublicID:    post.PublicID,
 		Title:       post.Title,
 		Author:      post.Author,
 		Slug:        post.Slug,
 		Description: post.Description,
 		Content:     post.Content,
 	})
-
-	// TODO: print log
 	if err != nil {
+		log.Printf("DB Error creating post: %v\n", err)
 		return nil, err
 	}
 
@@ -63,7 +57,6 @@ func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*
 
 func (r *Repository) GetPost(ctx context.Context, id string) (*domain.Post, error) {
 	post_, err := r.db.GetPost(ctx, id)
-
 	if err != nil {
 		log.Printf("Error getting post. Got: %v", err)
 
@@ -94,7 +87,6 @@ func (r *Repository) GetPost(ctx context.Context, id string) (*domain.Post, erro
 // TODO: Add pagination
 func (r *Repository) GetPosts(ctx context.Context) ([]*domain.Post, error) {
 	posts, err := r.db.GetPosts(ctx)
-
 	if err != nil {
 		log.Printf("DB Error obtaining posts: %v", err)
 
@@ -140,7 +132,6 @@ func (r *Repository) UpdatePost(ctx context.Context, post *domain.Post) (*domain
 			Time:  post.PublishedAt,
 		},
 	})
-
 	if err != nil {
 		log.Printf("DB Error updating post: %v\n", err)
 
