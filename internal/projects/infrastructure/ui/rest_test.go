@@ -242,6 +242,28 @@ func TestGetProject(t *testing.T) {
 
 	t.Run("it should return a bad request error", func(t *testing.T) {
 		t.Skip("Test not implemented yet")
+
+		req := httptest.NewRequest(http.MethodGet, "/projects/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/projects/:id")
+
+		uc := &mocks.MockProjectsUsecase{}
+		h := NewProjectsRouter(e, uc)
+
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Project, error) {
+			return nil, domain.ErrProjectNotFound
+		}
+
+		err := h.getProject(c)
+		if err == nil {
+			t.Error("Got nil getting project, want error")
+		}
+
+		if !errors.Is(err, echo.ErrBadRequest) {
+			t.Errorf("Error getting project = %v, want %v", err, echo.ErrBadRequest)
+		}
 	})
 
 	t.Run("it should return a not found error", func(t *testing.T) {
