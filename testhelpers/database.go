@@ -22,7 +22,11 @@ func ApplyMigrations(t *testing.T, ctx context.Context, connStr string) {
 
 	basePath := filepath.Dir(b)
 	migrationsAbsDir := filepath.Join("file:///", basePath, "../migrations")
+
 	m, err := migrate.New(migrationsAbsDir, connStr)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	err = m.Up()
 	if err != nil {

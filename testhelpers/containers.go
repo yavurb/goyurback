@@ -11,11 +11,6 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-const (
-	migrationsDir    = "../migrations"
-	migrationsSuffix = "up.sql"
-)
-
 type PostgresContainer struct {
 	Container  *postgres.PostgresContainer
 	ConnString string
