@@ -7,11 +7,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-func CompareMaps(a, b map[string]any) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
+func CompareMaps(a, b any) bool {
 	aBytes, _ := json.Marshal(a)
 	bBytes, _ := json.Marshal(b)
 	aT := make(map[string]any)

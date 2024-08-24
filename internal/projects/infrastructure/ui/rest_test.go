@@ -296,3 +296,123 @@ func TestGetProject(t *testing.T) {
 		}
 	})
 }
+
+func TestGetProjects(t *testing.T) {
+	e := echo.New()
+
+	t.Run("it should return the projects", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/projects")
+
+		uc := &mocks.MockProjectsUsecase{}
+		h := NewProjectsRouter(e, uc)
+
+		want := map[string][]map[string]any{
+			"data": {
+				{
+					"id":            "pr_12345",
+					"name":          "test",
+					"description":   "Some project description",
+					"tags":          []string{"tag1", "tag2", "tag3"},
+					"thumbnail_url": "https://example.com/image.jpg",
+					"website_url":   "https://example.com",
+					"live":          true,
+					"created_at":    time.Now().UTC().Format(time.RFC3339Nano),
+					"updated_at":    time.Now().UTC().Format(time.RFC3339Nano),
+				},
+				{
+					"id":            "pr_12346",
+					"name":          "test 2",
+					"description":   "Some second project description",
+					"tags":          []string{"tag4", "tag5", "tag6"},
+					"thumbnail_url": "https://example.com/image2.jpg",
+					"website_url":   "https://exampletwo.com",
+					"live":          true,
+					"created_at":    time.Now().UTC().Format(time.RFC3339Nano),
+					"updated_at":    time.Now().UTC().Format(time.RFC3339Nano),
+				},
+			},
+		}
+
+		uc.GetProjectsFn = func(ctx context.Context) ([]*domain.Project, error) {
+			createdAt, _ := time.Parse(time.RFC3339, want["data"][0]["created_at"].(string))
+			updatedAt, _ := time.Parse(time.RFC3339, want["data"][0]["updated_at"].(string))
+			createdAt2, _ := time.Parse(time.RFC3339, want["data"][1]["created_at"].(string))
+			updatedAt2, _ := time.Parse(time.RFC3339, want["data"][1]["updated_at"].(string))
+
+			return []*domain.Project{
+				{
+					ID:           1,
+					PublicID:     "pr_12345",
+					Name:         "test",
+					Description:  "Some project description",
+					ThumbnailURL: "https://example.com/image.jpg",
+					WebsiteURL:   "https://example.com",
+					Live:         true,
+					Tags:         []string{"tag1", "tag2", "tag3"},
+					PostID:       1,
+					CreatedAt:    createdAt,
+					UpdatedAt:    updatedAt,
+				},
+				{
+					ID:           2,
+					PublicID:     "pr_12346",
+					Name:         "test 2",
+					Description:  "Some second project description",
+					ThumbnailURL: "https://example.com/image2.jpg",
+					WebsiteURL:   "https://exampletwo.com",
+					Live:         true,
+					Tags:         []string{"tag4", "tag5", "tag6"},
+					PostID:       2,
+					CreatedAt:    createdAt2,
+					UpdatedAt:    updatedAt2,
+				},
+			}, nil
+		}
+
+		err := h.getProjects(c)
+		if err != nil {
+			t.Errorf("getProjects() error = %v, want no error", err)
+		}
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("getProjects() status = %v, want %v", rec.Code, http.StatusOK)
+		}
+
+		got := make(map[string]any)
+		if err = json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Errorf("Error unmarshalling response: %s", err)
+		}
+
+		if !testhelpers.CompareMaps(want, got) {
+			t.Errorf("getProject() mismatch:\n%s", cmp.Diff(want, got))
+		}
+	})
+
+	t.Run("it should return a internal server error", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/projects", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/projects")
+
+		uc := &mocks.MockProjectsUsecase{}
+		h := NewProjectsRouter(e, uc)
+
+		uc.GetProjectsFn = func(ctx context.Context) ([]*domain.Project, error) {
+			return nil, errors.New("DB Error")
+		}
+
+		err := h.getProjects(c)
+		if err == nil {
+			t.Error("Got nil gettings projects, want error")
+		}
+
+		if !errors.Is(err, echo.ErrInternalServerError) {
+			t.Errorf("getProject() error = %v, want %v", err, echo.ErrNotFound)
+		}
+	})
+}
