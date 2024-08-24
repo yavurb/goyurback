@@ -3,10 +3,11 @@ package application
 import (
 	"context"
 	"errors"
-	"reflect"
+	"regexp"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/yavurb/goyurback/internal/posts/application/mocks"
 	"github.com/yavurb/goyurback/internal/posts/domain"
 )
@@ -21,25 +22,21 @@ func TestCreatePost(t *testing.T) {
 		Status:      "draft",
 		Description: "Some Description",
 		Content:     "Some Content",
-		PublishedAt: time.Now(),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
 	}
 
 	repo := &mocks.MockPostsRepository{
 		CreatePostFn: func(ctx context.Context, post *domain.PostCreate) (*domain.Post, error) {
 			return &domain.Post{
 				ID:          1,
-				PublicID:    "someid",
+				PublicID:    post.PublicID,
 				Title:       post.Title,
 				Author:      post.Author,
 				Slug:        post.Slug,
-				Status:      "draft",
+				Status:      domain.Draft,
 				Description: post.Description,
 				Content:     post.Content,
-				PublishedAt: want.PublishedAt,
-				CreatedAt:   want.CreatedAt,
-				UpdatedAt:   want.UpdatedAt,
+				CreatedAt:   time.Now().UTC(),
+				UpdatedAt:   time.Now().UTC(),
 			}, nil
 		},
 	}
@@ -47,13 +44,19 @@ func TestCreatePost(t *testing.T) {
 	uc := NewPostUsecase(repo)
 	ctx := context.Background()
 
-	post, err := uc.Create(ctx, want.Title, want.Author, want.Slug, want.Description, want.Content)
+	got, err := uc.Create(ctx, want.Title, want.Author, want.Slug, want.Description, want.Content)
 	if err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
-	if !reflect.DeepEqual(post, want) {
-		t.Errorf("Expected post to be %v, got: %v", want, post)
+	rgx := regexp.MustCompile(`po_[a-zA-Z0-9]{5}`)
+	if !rgx.MatchString(got.PublicID) {
+		t.Errorf("Expected PublicID to match the regex %s, got: %s", rgx.String(), got.PublicID)
+	}
+
+	want.PublicID = got.PublicID
+	if !want.Compare(*got) {
+		t.Errorf("Mismatch creating post (-want,+got):\n%s", cmp.Diff(want, got))
 	}
 }
 

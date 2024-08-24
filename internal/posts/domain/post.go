@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"reflect"
+	"time"
+)
 
 type Status string
 
@@ -24,7 +27,16 @@ type Post struct {
 	ID          int32
 }
 
+func (p Post) Compare(p2 Post) bool {
+	p.CreatedAt = p2.CreatedAt
+	p.UpdatedAt = p2.UpdatedAt
+	p.PublishedAt = p2.PublishedAt
+
+	return reflect.DeepEqual(p, p2)
+}
+
 type PostCreate struct {
+	PublicID    string
 	Title       string
 	Author      string
 	Slug        string

@@ -9,11 +9,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/database/postgres"
-	"github.com/yavurb/goyurback/internal/pgk/ids"
 	"github.com/yavurb/goyurback/internal/posts/domain"
 )
-
-const prefix = "po"
 
 type Repository struct {
 	db *postgres.Queries
@@ -28,18 +25,16 @@ func NewRepo(connpool *pgxpool.Pool) domain.PostRepository {
 }
 
 func (r *Repository) CreatePost(ctx context.Context, post *domain.PostCreate) (*domain.Post, error) {
-	id, _ := ids.NewPublicID(prefix) // TODO: handle errors and validate if the id already exists
-
 	post_, err := r.db.CreatePost(ctx, postgres.CreatePostParams{
-		PublicID:    id,
+		PublicID:    post.PublicID,
 		Title:       post.Title,
 		Author:      post.Author,
 		Slug:        post.Slug,
 		Description: post.Description,
 		Content:     post.Content,
 	})
-	// TODO: print log
 	if err != nil {
+		log.Printf("DB Error creating post: %v\n", err)
 		return nil, err
 	}
 

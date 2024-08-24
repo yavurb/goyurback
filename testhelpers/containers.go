@@ -3,8 +3,6 @@ package testhelpers
 import (
 	"context"
 	"log"
-	"path/filepath"
-	"runtime"
 	"testing"
 	"time"
 
@@ -18,25 +16,6 @@ const (
 	migrationsSuffix = "up.sql"
 )
 
-func GetMigrations(t *testing.T, ctx context.Context) []string {
-	t.Helper()
-
-	_, b, _, ok := runtime.Caller(0)
-	if !ok {
-		t.Error("Unable to get caller information")
-	}
-
-	basePath := filepath.Dir(b)
-	migrationsAbsDir := filepath.Join(basePath, migrationsDir)
-
-	files, err := filepath.Glob(filepath.Join(migrationsAbsDir, "*"+migrationsSuffix))
-	if err != nil {
-		t.Errorf("Failed to read migrations: %v", err)
-	}
-
-	return files
-}
-
 type PostgresContainer struct {
 	Container  *postgres.PostgresContainer
 	ConnString string
@@ -45,12 +24,9 @@ type PostgresContainer struct {
 func CreatePostgresContainer(t *testing.T, ctx context.Context) (*PostgresContainer, error) {
 	t.Helper()
 
-	migrations := GetMigrations(t, ctx)
-
 	pgContainer, err := postgres.Run(
 		ctx,
 		"postgres:16-alpine",
-		postgres.WithInitScripts(migrations...),
 		postgres.WithDatabase("goyurback"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"),
@@ -70,6 +46,8 @@ func CreatePostgresContainer(t *testing.T, ctx context.Context) (*PostgresContai
 	if err != nil {
 		t.Errorf("Could not get connection string: %v", err)
 	}
+
+	ApplyMigrations(t, ctx, connStr)
 
 	return &PostgresContainer{
 		Container:  pgContainer,

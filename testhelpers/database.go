@@ -3,35 +3,85 @@ package testhelpers
 import (
 	"context"
 	"log"
+	"path/filepath"
+	"runtime"
 	"testing"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
+
+func ApplyMigrations(t *testing.T, ctx context.Context, connStr string) {
+	t.Helper()
+
+	_, b, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Error("Unable to get caller information")
+	}
+
+	basePath := filepath.Dir(b)
+	migrationsAbsDir := filepath.Join("file:///", basePath, "../migrations")
+	m, err := migrate.New(migrationsAbsDir, connStr)
+
+	err = m.Up()
+	if err != nil {
+		t.Fatalf("Error migrating up database: %v", err)
+	}
+}
 
 func CleanDatabase(t *testing.T, ctx context.Context, connStr string) {
 	t.Helper()
 
 	t.Cleanup(func() {
-		connpool, err := pgxpool.New(ctx, connStr)
-		if err != nil {
-			log.Fatalf("Unable to create connection pool: %v\n", err)
+		_, b, _, ok := runtime.Caller(0)
+		if !ok {
+			t.Error("Unable to get caller information")
 		}
-		defer connpool.Close() // Close the connection pool to release the
 
-		stmt := `
-    DO $$
-      DECLARE
-        table_name text;
-      BEGIN
-        FOR table_name in (SELECT tablename FROM pg_tables WHERE schemaname='public') LOOP
-          EXECUTE 'TRUNCATE TABLE ' || table_name || ' RESTART IDENTITY CASCADE;';
-        END LOOP;
-    END $$;
-    `
+		basePath := filepath.Dir(b)
+		migrationsAbsDir := filepath.Join("file:///", basePath, "../migrations")
 
-		_, err = connpool.Exec(ctx, stmt)
+		m, err := migrate.New(migrationsAbsDir, connStr)
 		if err != nil {
-			t.Fatalf("Error truncating tables: %v", err)
+			t.Fatal(err)
+		}
+
+		if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+			t.Fatalf("Error dropping database: %v", err)
+		}
+
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			log.Printf("Error migrating up: %v", err)
+			log.Fatal(err)
+		}
+	})
+}
+
+func DeleteDatabase(t *testing.T, ctx context.Context, connStr string) {
+	t.Helper()
+
+	_, b, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Error("Unable to get caller information")
+	}
+
+	basePath := filepath.Dir(b)
+	migrationsAbsDir := filepath.Join("file:///", basePath, "../migrations")
+
+	m, err := migrate.New(migrationsAbsDir, connStr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := m.Down(); err != nil && err != migrate.ErrNoChange {
+		t.Fatalf("Error dropping database: %v", err)
+	}
+
+	t.Cleanup(func() {
+		if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+			log.Printf("Error migrating up: %v", err)
+			log.Fatal(err)
 		}
 	})
 }
