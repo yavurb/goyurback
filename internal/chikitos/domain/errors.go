@@ -2,6 +2,4 @@ package domain
 
 import "errors"
 
-var (
-	ErrNotChikitoFound = errors.New("no chikito was found")
-)
+var ErrChikitoNotFound = errors.New("no chikito was found")

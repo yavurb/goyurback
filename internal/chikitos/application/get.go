@@ -12,7 +12,7 @@ func (uc *ChikitoUsecase) Get(ctx context.Context, id string) (*domain.Chikito, 
 	if err != nil {
 		log.Printf("Unable to get chikito. Got: %v\n", err)
 
-		return nil, err
+		return nil, domain.ErrChikitoNotFound
 	}
 
 	return chikito, err

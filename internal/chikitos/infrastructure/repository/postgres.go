@@ -50,7 +50,7 @@ func (r *Repository) GetChikito(ctx context.Context, id string) (*domain.Chikito
 		log.Printf("DB Error getting chikito: %v\n", err)
 
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, domain.ErrNotChikitoFound
+			return nil, domain.ErrChikitoNotFound
 		}
 
 		return nil, err
