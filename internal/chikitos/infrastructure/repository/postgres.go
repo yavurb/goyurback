@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yavurb/goyurback/internal/chikitos/domain"
 	"github.com/yavurb/goyurback/internal/database/postgres"
@@ -28,6 +29,13 @@ func (r *Repository) CreateChikito(ctx context.Context, chikito *domain.ChikitoC
 	})
 	if err != nil {
 		log.Printf("DB Error creating chikito: %v\n", err)
+
+		pgErr := new(pgconn.PgError)
+		if errors.As(err, &pgErr) {
+			if pgErr.Code == "23505" && pgErr.ConstraintName == "chikitos_public_id_key" {
+				return nil, domain.ErrPublicIDAlreadyExists
+			}
+		}
 
 		return nil, err
 	}
