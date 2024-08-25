@@ -44,16 +44,12 @@ jobs:
       - name: Setup Environment
         env:
           DB_URI: ${{ secrets.DB_URI }}
-          CERT_PEM: ${{ secrets.CERT_PEM }}
-          KEY_PEM: ${{ secrets.KEY_PEM }}
         run: |
           echo "${{ needs.git-release.outputs.semver }}" > ./cmd/goyurback/.version
           cat cmd/goyurback/.version
           echo "GO_ENV=prod" >> .env.prod
           echo "DB_URI=$DB_URI" >> .env.prod
           echo "PORT=$PORT" >> .env.prod
-          echo $CER_PEM > certs/cert.pem
-          echo $KEY_PEM > certs/key.pem
 
       - name: Configure docker for gcloud
         run: gcloud auth configure-docker $REGION-docker.pkg.dev
@@ -69,7 +65,7 @@ jobs:
     name: Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: prod
-    needs: [ git-release, build ]
+    needs: [git-release, build]
     permissions:
       contents: read
       id-token: write
