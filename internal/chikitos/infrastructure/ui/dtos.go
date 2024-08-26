@@ -3,7 +3,7 @@ package ui
 import "time"
 
 type CreateIn struct {
-	URL         string `json:"url" validate:"required, url"`
+	URL         string `json:"url" validate:"required,url"`
 	Description string `json:"description" validate:"required"`
 }
 

@@ -12,22 +12,31 @@ type chikitoRouterCtx struct {
 	usecase domain.ChikitoUsecase
 }
 
-func NewChikitosRouter(echo *echo.Echo, usecase domain.ChikitoUsecase) {
-	routerGroup := echo.Group("/chikito")
+func NewChikitosRouter(e *echo.Echo, usecase domain.ChikitoUsecase) *chikitoRouterCtx {
+	routerGroup := e.Group("/chikitos")
 	routerCtx := &chikitoRouterCtx{
 		usecase: usecase,
 	}
 
 	routerGroup.POST("", routerCtx.create)
 	routerGroup.GET("/:id", routerCtx.get)
+
+	return routerCtx
 }
 
 func (ctx *chikitoRouterCtx) create(c echo.Context) error {
-	var chikito CreateIn
+	chikito := new(CreateIn)
 
-	if err := c.Bind(&chikito); err != nil {
+	if err := c.Bind(chikito); err != nil {
 		log.Printf("Bad request body for a chikito. %v", err)
 
+		return HTTPError{
+			Message: "Bad request body",
+		}.ErrUnprocessableEntity()
+	}
+
+	if err := c.Validate(chikito); err != nil {
+		// TODO: Format field errors and return a more helpful response message
 		return HTTPError{
 			Message: "Bad request body",
 		}.ErrUnprocessableEntity()

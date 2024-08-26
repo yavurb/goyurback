@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/yavurb/goyurback/internal/app/mods"
 	postApplication "github.com/yavurb/goyurback/internal/posts/application"
 	postRepository "github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
 	postUI "github.com/yavurb/goyurback/internal/posts/infrastructure/ui"
@@ -65,6 +66,8 @@ func (c *appContext) NewRouter() *echo.Echo {
 	e.Use(middleware.Recover())
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20))) // Limits request to 20req/s based on the client's IP
 	e.Use(middleware.Logger())                                              // Use a simple logger middleware
+
+	e.Validator = mods.NewAppValidator()
 
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
