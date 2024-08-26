@@ -65,7 +65,7 @@ jobs:
     name: Deploy to Cloud Run
     runs-on: ubuntu-latest
     environment: prod
-    needs: [ git-release, build ]
+    needs: [git-release, build]
     permissions:
       contents: read
       id-token: write
