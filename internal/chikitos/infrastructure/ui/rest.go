@@ -65,11 +65,19 @@ func (ctx *chikitoRouterCtx) create(c echo.Context) error {
 func (ctx *chikitoRouterCtx) get(c echo.Context) error {
 	var chikitoParams GetChikitoParams
 
+	// TODO: Use fluent binding
 	if err := c.Bind(&chikitoParams); err != nil {
 		log.Printf("Bad chikito params. %v\n", err)
 
 		return HTTPError{
 			Message: "Bad chikito params",
+		}.ErrUnprocessableEntity()
+	}
+
+	if err := c.Validate(chikitoParams); err != nil {
+		// TODO: Format field errors and return a more helpful response message
+		return HTTPError{
+			Message: "Bad request params",
 		}.ErrUnprocessableEntity()
 	}
 

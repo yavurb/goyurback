@@ -155,3 +155,100 @@ func TestCreateChikito(t *testing.T) {
 		}
 	})
 }
+
+func TestMain(t *testing.T) {
+	e := echo.New()
+	e.Validator = mods.NewAppValidator()
+
+	t.Run("It should redirect to the chikito's URL", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/chikitos/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("ch_12345")
+
+		uc := &mocks.MockChikitosUsecase{}
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Chikito, error) {
+			if id != "ch_12345" {
+				return nil, domain.ErrChikitoNotFound
+			}
+
+			return &domain.Chikito{
+				ID:          1,
+				PublicID:    "ch_12345",
+				URL:         "https://example.com",
+				Description: "Some random description",
+				CreatedAt:   time.Now().UTC(),
+				UpdatedAt:   time.Now().UTC(),
+			}, nil
+		}
+
+		h := NewChikitosRouter(e, uc)
+
+		err := h.get(c)
+		if err != nil {
+			t.Errorf("Expected no error getting chikito. Got: %v", err)
+		}
+
+		if rec.Code != http.StatusPermanentRedirect {
+			t.Errorf("Expected response code to be a 308 (StatusPermanentRedirect). Got: %d", rec.Code)
+		}
+
+		if rec.Result().Header.Get("Location") != "https://example.com" {
+			t.Errorf("Expected location to be 'https://example.com'. Got: %s", rec.Result().Header.Get("Location"))
+		}
+	})
+
+	t.Run("It should return a not found error", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/chikitos/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+		c.SetParamValues("ch_12345")
+
+		uc := &mocks.MockChikitosUsecase{}
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Chikito, error) {
+			return nil, domain.ErrChikitoNotFound
+		}
+
+		h := NewChikitosRouter(e, uc)
+
+		err := h.get(c)
+		if err == nil {
+			t.Error("Expected error getting chikito. Got nil")
+		}
+
+		if !errors.Is(err, echo.ErrNotFound) {
+			t.Errorf("Expected error to be a 404 (ErrNotFound). Got: %v", err)
+		}
+	})
+
+	t.Run("It should return a unprocessable entity error", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodPost, "/chikitos/:id", nil)
+		rec := httptest.NewRecorder()
+		c := e.NewContext(req, rec)
+
+		c.SetPath("/:id")
+		c.SetParamNames("id")
+
+		uc := &mocks.MockChikitosUsecase{}
+		uc.GetFn = func(ctx context.Context, id string) (*domain.Chikito, error) {
+			return nil, domain.ErrChikitoNotFound
+		}
+
+		h := NewChikitosRouter(e, uc)
+
+		err := h.get(c)
+		if err == nil {
+			t.Error("Expected error getting chikito. Got nil")
+		}
+
+		if !errors.Is(err, echo.ErrUnprocessableEntity) {
+			t.Errorf("Expected error to be a 422 (ErrUnprocessableEntity). Got: %v", err)
+		}
+	})
+}

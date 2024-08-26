@@ -22,7 +22,10 @@ func (e HTTPError) BadRequest() error {
 }
 
 func (e HTTPError) NotFound() error {
-	return echo.NewHTTPError(http.StatusNotFound, e.Message)
+	err := echo.ErrNotFound
+	err.Message = e.Message
+
+	return err
 }
 
 func (e HTTPError) Unauthorized() error {
