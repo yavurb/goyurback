@@ -80,7 +80,7 @@ func TestCreateChikito(t *testing.T) {
 		}
 
 		if !testhelpers.CompareMaps(want, got) {
-			t.Errorf("createProject() mismatch:\n%s", cmp.Diff(want, got))
+			t.Errorf("Mismatch creating chikito:\n%s", cmp.Diff(want, got))
 		}
 	})
 
@@ -156,7 +156,7 @@ func TestCreateChikito(t *testing.T) {
 	})
 }
 
-func TestMain(t *testing.T) {
+func TestGetChikito(t *testing.T) {
 	e := echo.New()
 	e.Validator = mods.NewAppValidator()
 

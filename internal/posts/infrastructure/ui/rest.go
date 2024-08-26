@@ -12,10 +12,10 @@ type postRouterCtx struct {
 	postUsecase domain.PostUsecase
 }
 
-func NewPostsRouter(echo *echo.Echo, postUsecase domain.PostUsecase) {
-	routerGroup := echo.Group("/posts")
+func NewPostsRouter(e *echo.Echo, postUsecase domain.PostUsecase) *postRouterCtx {
+	routerGroup := e.Group("/posts")
 	routerCtx := &postRouterCtx{
-		echo,
+		e,
 		postUsecase,
 	}
 
@@ -23,14 +23,22 @@ func NewPostsRouter(echo *echo.Echo, postUsecase domain.PostUsecase) {
 	routerGroup.GET("/:id", routerCtx.getPost)
 	routerGroup.GET("", routerCtx.getPosts)
 	routerGroup.PATCH("/:id", routerCtx.updatePost)
+
+	return routerCtx
 }
 
 func (ctx *postRouterCtx) createPost(c echo.Context) error {
-	var post PostIn
+	post := new(PostIn)
 
-	if err := c.Bind(&post); err != nil {
+	if err := c.Bind(post); err != nil {
 		return HTTPError{
 			Message: "Invalid request body",
+		}.ErrUnprocessableEntity()
+	}
+
+	if err := c.Validate(post); err != nil {
+		return HTTPError{
+			Message: "Invalid params",
 		}.ErrUnprocessableEntity()
 	}
 
@@ -62,6 +70,12 @@ func (ctx *postRouterCtx) getPost(c echo.Context) error {
 		return HTTPError{
 			Message: "Invalid params",
 		}.BadRequest()
+	}
+
+	if err := c.Validate(params); err != nil {
+		return HTTPError{
+			Message: "Invalid params",
+		}.ErrUnprocessableEntity()
 	}
 
 	post, err := ctx.postUsecase.Get(c.Request().Context(), params.ID)
