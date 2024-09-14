@@ -22,6 +22,6 @@ repos:
         name: Run tests
         alias: gotest
         entry: make test
+        types: [go]
         language: system
-        always_run: true
         stages: [commit, push]
