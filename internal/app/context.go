@@ -12,6 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"github.com/yavurb/goyurback/internal/app/mods"
 	postApplication "github.com/yavurb/goyurback/internal/posts/application"
 	postRepository "github.com/yavurb/goyurback/internal/posts/infrastructure/repository"
 	postUI "github.com/yavurb/goyurback/internal/posts/infrastructure/ui"
@@ -23,6 +24,10 @@ import (
 	authApplication "github.com/yavurb/goyurback/internal/auth/application"
 	authRepository "github.com/yavurb/goyurback/internal/auth/infrastructure/repository"
 	authUI "github.com/yavurb/goyurback/internal/auth/infrastructure/ui"
+
+	chikitoApplication "github.com/yavurb/goyurback/internal/chikitos/application"
+	chikitoRepository "github.com/yavurb/goyurback/internal/chikitos/infrastructure/repository"
+	chikitoUI "github.com/yavurb/goyurback/internal/chikitos/infrastructure/ui"
 )
 
 type appContext struct {
@@ -47,6 +52,7 @@ func NewAppContext() *appContext {
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
+
 	appCtx.Connpool = connpool
 
 	return appCtx
@@ -61,6 +67,8 @@ func (c *appContext) NewRouter() *echo.Echo {
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(20))) // Limits request to 20req/s based on the client's IP
 	e.Use(middleware.Logger())                                              // Use a simple logger middleware
 
+	e.Validator = mods.NewAppValidator()
+
 	e.GET("/health", func(c echo.Context) error { return c.String(http.StatusOK, "Healthy!") })
 
 	postRespository := postRepository.NewRepo(c.Connpool)
@@ -70,6 +78,10 @@ func (c *appContext) NewRouter() *echo.Echo {
 	projectRespository := projectRepository.NewRepo(c.Connpool)
 	projectUcase := projectApplication.NewProjectUsecase(projectRespository)
 	projectUI.NewProjectsRouter(e, projectUcase)
+
+	chikitoRespository := chikitoRepository.NewRepo(c.Connpool)
+	chikitoUcase := chikitoApplication.NewChikitoUsecase(chikitoRespository)
+	chikitoUI.NewChikitosRouter(e, chikitoUcase)
 
 	authAPIKeyRespository := authRepository.NewAPIKeyRepo(c.Connpool)
 	authAPIKeyUcase := authApplication.NewAPIKeyUsecase(authAPIKeyRespository)

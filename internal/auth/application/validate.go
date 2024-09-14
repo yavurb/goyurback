@@ -19,6 +19,7 @@ func (uc *apiKeyUsecase) ValidateAPIKey(ctx context.Context, key string) (bool, 
 
 		return false, err
 	}
+
 	if !match {
 		return false, nil
 	}

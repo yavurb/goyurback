@@ -1,0 +1,25 @@
+services:
+  main:
+    build: .
+    image: goyurback
+    depends_on:
+      - postgres
+    ports:
+      - 8910:8910
+    develop:
+      watch:
+        - action: rebuild
+          path: ./internal
+        - action: rebuild
+          path: ./cmd
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: goyurback
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.db:/var/lib/postgresql/data

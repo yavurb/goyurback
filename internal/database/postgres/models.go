@@ -54,6 +54,15 @@ func (ns NullPostStatus) Value() (driver.Value, error) {
 	return string(ns.PostStatus), nil
 }
 
+type Chikito struct {
+	ID          int32
+	PublicID    string
+	Url         string
+	Description string
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+}
+
 type Apikey struct {
 	ID        int32
 	PublicID  string

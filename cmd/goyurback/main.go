@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	_ "embed"
 	"fmt"
+	"net/http"
+	"os"
+	"os/signal"
 	"strings"
+	"time"
 
 	"github.com/yavurb/goyurback/internal/app"
 )
@@ -31,6 +36,22 @@ func main() {
 	`, Version)
 	fmt.Println()
 
-	host := fmt.Sprintf("0.0.0.0:%s", appCtx.Settings.Port)
-	app.Logger.Fatal(app.Start(host))
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
+	defer stop()
+
+	go func() {
+		host := fmt.Sprintf("0.0.0.0:%s", appCtx.Settings.Port)
+		if err := app.Start(host); err != nil && err != http.ErrServerClosed {
+			app.Logger.Fatal("shutting down the server", err)
+		}
+	}()
+
+	<-ctx.Done()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	defer cancel()
+
+	if err := app.Shutdown(ctx); err != nil {
+		app.Logger.Fatal(err)
+	}
 }
