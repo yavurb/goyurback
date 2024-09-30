@@ -32,13 +32,12 @@ func (uc *apiKeyUsecase) CreateAPIKey(ctx context.Context, name string) (*domain
 	}
 
 	createdKey, err := uc.repository.CreateAPIKey(ctx, apiKey)
-
-	keyString = strings.Join([]string{prefix, keyString}, "_")
-	createdKey.Key = keyString
-
 	if err != nil {
 		return nil, err
 	}
+
+	keyString = strings.Join([]string{prefix, keyString}, "_")
+	createdKey.Key = keyString
 
 	return createdKey, nil
 }
