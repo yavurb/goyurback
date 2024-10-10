@@ -1,4 +1,4 @@
-latest_tag := $(shell git describe --tags &> /dev/null || git rev-parse --short HEAD)
+latest_tag := $(shell git describe --tags 2> /dev/null || git rev-parse --short HEAD)
 new_migration: name ?= $(shell uuidgen)
 db_upgrade: conn_string ?= "postgres://postgres:postgres@localhost:5432/goyurback?sslmode=disable"
 
