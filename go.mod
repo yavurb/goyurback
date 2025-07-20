@@ -8,7 +8,7 @@ tool (
 )
 
 require (
-	github.com/go-playground/validator/v10 v10.26.0
+	github.com/go-playground/validator/v10 v10.27.0
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/google/go-cmp v0.7.0
 	github.com/jackc/pgx/v5 v5.7.5
