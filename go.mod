@@ -85,7 +85,7 @@ require (
 	github.com/docker/docker v28.0.1+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
+	github.com/dvsekhvalnov/jose2go v1.7.0 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
 	github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712 // indirect
 	github.com/envoyproxy/go-control-plane v0.13.0 // indirect
