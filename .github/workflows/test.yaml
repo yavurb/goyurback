@@ -37,6 +37,10 @@ jobs:
       - name: Install modules
         run: go mod download
 
+      - name: Setup Environment
+        run: |
+          just write_version
+
       - name: Run tests
         run: |
           just test
