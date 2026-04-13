@@ -1,6 +1,6 @@
 module github.com/yavurb/goyurback
 
-go 1.24
+go 1.26
 
 tool (
 	github.com/air-verse/air
